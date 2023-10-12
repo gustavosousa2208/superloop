@@ -13,11 +13,12 @@ OBJ_FILES = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(SRC_FILES)))
 # Name of the executable
 TARGET = $(BIN_DIR)/superloop
 
-all: $(TARGET)
+all: clean $(TARGET)
 
 $(TARGET): $(OBJ_FILES)
 	@mkdir -p $(BIN_DIR)
 	$(CC) $^ -o $@
+	./bin/superloop
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(OBJ_DIR)

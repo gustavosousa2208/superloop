@@ -12,6 +12,35 @@
 #include <unistd.h>
 #include <pthread.h>
 
+struct ThreadData {
+    int socket_descriptor;
+    // Add any other arguments here
+};
+
+void* telegramReceive(void* arg) {
+
+    struct ThreadData* data = (struct ThreadData*) arg;
+    int s = data->socket_descriptor;
+
+    struct can_frame frame;
+    while (1) {
+        ssize_t nbytes = read(s, &frame, sizeof(struct can_frame));
+        
+        if (nbytes < 0) {
+            perror("read");
+            break;
+        }
+
+        if (frame.can_id == 0x123) {
+            printf("Received CAN frame ID: 0x%X, Data Length: %d, Data: ", frame.can_id, frame.can_dlc);
+            for (int i = 0; i < frame.can_dlc; i++) {
+                printf("%02X ", frame.data[i]);
+            }
+            printf("\n"); 
+        }
+    }
+}
+
 int createCANSocket(const char* interface_name) {
     int s;
     struct sockaddr_can addr;

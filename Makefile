@@ -1,9 +1,10 @@
 CC = gcc
 CFLAGS = -Wall -Iinclude
+# CFLAGS = -Iinclude
 SRC_DIR = src
 OBJ_DIR = obj
 BIN_DIR = bin
-PFLAGS = -lncurses
+PFLAGS = -lncurses -ltinfo
 
 # List of source files (excluding .c extension)
 SRC_FILES = $(notdir $(basename $(wildcard $(SRC_DIR)/*.c)))
@@ -19,7 +20,7 @@ all: clean $(TARGET)
 $(TARGET): $(OBJ_FILES)
 	@mkdir -p $(BIN_DIR) 
 	$(CC) $^ -o $@ $(PFLAGS)
-	./bin/superloop
+	./bin/superloop -s 100
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(OBJ_DIR)

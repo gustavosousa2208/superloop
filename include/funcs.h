@@ -119,35 +119,41 @@ void telegramReceivePrint(int s) {
         }
 
         // if (frame.can_id == 0x685) {
-        //     printf("Speed (RPM) ID: 0x%X, LEN: %d, DATA: ", frame.can_id, frame.can_dlc);
+        //     printf("Commanded Speed (RPM) ID: 0x%X, LEN: %d, DATA: ", frame.can_id, frame.can_dlc);
         //     for (int i = 0; i < frame.can_dlc; i++) {
         //         printf("%02X ", frame.data[i]);
         //     }
         //     printf("\n"); 
         // }
-        // if (frame.can_id == 0x680) {
-        //     printf("Logical State ID: 0x%X, LEN: %d, DATA: ", frame.can_id, frame.can_dlc);
-        //     for (int i = 0; i < frame.can_dlc; i++) {
-        //         printf("%02X ", frame.data[i]);
-        //     }
-        //     printf("\n"); 
-        // }
-        if (frame.can_id == 0x04) {
-            printf("Voltage ID: 0x%X, LEN: %d, DATA: ", frame.can_id, frame.can_dlc);
-            for (int i = 0; i < frame.can_dlc; i++) {
-                printf("%02X ", frame.data[i]);
-            }
+        if (frame.can_id == 0x680) {
+            printf("Logical State ID: 0x%X, LEN: %d, DATA: ", frame.can_id, frame.can_dlc);
             printf("\n"); 
         }
+        if (frame.can_id == 0x07) {
+            int temp = 0;
+            temp = (frame.data[1] << 8) | (frame.data[0]);
+            float tempf = ((float)temp) / 10;
+            printf("Battery Voltage %.1f\n", tempf);
+        }
+        if (frame.can_id == 0x04) {
+            int temp = 0;
+            temp = (frame.data[1] << 8) | (frame.data[0]);
+            float tempf = ((float)temp) / 10;
+            printf("Battery Voltage %.1f\n", tempf);
+        }
+        if (frame.can_id == 0x03) {
+            int temp = 0;
+            temp = (frame.data[1] << 8) | (frame.data[0]);
+            float tempf = ((float)temp) / 10;
+            printf("Motor Current %.1f\n", tempf);
+        }
 
-        // if (frame.can_id == 0x30) {
-        //     int temp = 0;
-        //     temp = (frame.data[0] << 8) | (frame.data[1]);
-        //     float tempf = (((float)temp) / 65535) * 170;
-        //     printf("Mosfet 1 Temperature %.1f | %X %X", tempf, frame.data[0], frame.data[1]);
-        //     printf("\n"); 
-        // }
-        
+        if (frame.can_id == 0x30) {
+            int temp = 0;
+            temp = (frame.data[1] << 8) | (frame.data[0]);
+            float tempf = ((float)temp) / 10;
+            printf("Mosfet 1 Temperature %.1f | %X %X\n", tempf);
+        }
     }
 }
 

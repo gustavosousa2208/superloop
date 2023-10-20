@@ -99,7 +99,7 @@ int mainFlow () {
         return 1;
     }
 
-    serialSendReceive(serial_interface, 0x55);
+    // serialSendReceive(serial_interface, 0x55);
     // int recvStatus = telegramReceive2(sock);
     telegramReceivePrint(sock);
 

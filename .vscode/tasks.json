@@ -2,15 +2,15 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "C/C++: gcc build active file",
-            "command": "/usr/bin/gcc",
+            "label": "C/C++: gcc-11 build active file",
+            "command": "/usr/bin/gcc-11",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
                 "${file}",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}",
-                "-I\"/home/gusta/source/superloop/include\""
+                "${workspaceFolder}/bin/${fileBasenameNoExtension}",
+                "-I/home/gusta/source/superloop/include"
             ],
             "options": {
                 "cwd": "${fileDirname}"

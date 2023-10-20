@@ -79,6 +79,7 @@ uint16_t telegramReceive2(int s) {
             }
         }
     }
+    return (uint16_t) (-1); 
 }
 
 int createCANSocket(const char* interface_name) {

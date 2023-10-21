@@ -1,10 +1,17 @@
-CC = gcc
+CC_x86_64 = gcc
+CC_aarch64 = aarch64-linux-gnu-gcc
+
+ifeq ($(OS),x86_64)
+	CC := $(CC_x86_64)
+else
+	CC := $(CC_aarch64)
+endif
+
 CFLAGS = -Wall -Iinclude
-# CFLAGS = -Iinclude
 SRC_DIR = src
 OBJ_DIR = obj
 BIN_DIR = bin
-PFLAGS = -lncurses -ltinfo -lmenu
+PFLAGS = -lncurses -ltinfo -lmenu -lpthread -std=cgnu89
 
 # List of source files (excluding .c extension)
 SRC_FILES = $(notdir $(basename $(wildcard $(SRC_DIR)/*.c)))
@@ -25,9 +32,8 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-compile:
-	@mkdir -p $(BIN_DIR) 
-	$(CC) $^ -o $@ $(PFLAGS)
+compile: $(TARGET)
+
 run:
 	./bin/superloop -s 100
 clean:

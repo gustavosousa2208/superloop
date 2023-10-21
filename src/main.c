@@ -4,11 +4,14 @@ const char *serial_interface = "/dev/ttyUSB0";
 const char *can_interface = "vcan0";
 
 int sharedCounter = 0;
+volatile int interrupted;
+
 uint16_t sharedCommandedSpeed;
 uint16_t sharedLogicalState;
 uint16_t sharedInverterBatteryVoltage;
 uint16_t sharedInverterMosfetTemperature1;
 uint16_t sharedInverterMosfetTemperature2;
+uint16_t sharedInverterAirTemperature;
 uint16_t sharedMotorCurrent;
 uint16_t sharedMotorVoltage;
 
@@ -18,7 +21,8 @@ uint16_t shareBMSTemperature;
 uint16_t sharedBMSRemainingCapacity;
 uint16_t sharedBMSTotalCapacity;
 
-pthread_mutex_t mutex;
+pthread_mutex_t incomingDataMutex;
+pthread_mutex_t canInterfaceMutex;
 
 int mainFlow () {
     int sock = createCANSocket(can_interface);
@@ -29,10 +33,10 @@ int mainFlow () {
     }
 
     pthread_t canThread, uiThread;
-    struct telegramThreadData canThreadData;
+    struct canReadThreadDataStruct canThreadData;
     canThreadData.socket_descriptor = sock;
 
-    if(pthread_create(&canThread, NULL, telegramReceivePrint, &canThreadData)){
+    if(pthread_create(&canThread, NULL, readInverterData, &canThreadData)){
         perror("can thread create");
         return 1;
     }
@@ -57,7 +61,7 @@ int mainFlow () {
         return 1;
     }
 
-    pthread_mutex_destroy(&mutex);
+    pthread_mutex_destroy(&incomingDataMutex);
 
     printf("Thread has finished.\n");
     return 0;

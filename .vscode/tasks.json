@@ -3,7 +3,8 @@
         {
             "type": "cppbuild",
             "label": "C/C++: aarch64-linux-gnu-gcc build active file",
-            "command": "/usr/bin/aarch64-linux-gnu-gcc",
+            // "command": "/usr/bin/aarch64-linux-gnu-gcc",
+            "command": "/usr/bin/gcc",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
@@ -12,7 +13,8 @@
                 "${fileDirname}/${fileBasenameNoExtension}",
                 "-I${workspaceFolder}/include",
                 "-lncurses",
-                "-ltinfo"
+                "-ltinfo",
+                "-lmenu",
             ],
             "options": {
                 "cwd": "${fileDirname}"

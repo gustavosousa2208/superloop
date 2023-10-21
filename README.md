@@ -7,3 +7,4 @@ rascunho pra comunicação can, rs485 e protocolos de segurança para controle d
 - [ ] Reimplementar pthreads e fazer a comunicação entre elas com funções próprias de real-time
 - [ ] Lidar com a situação de escrever na interface na mesma hora de ler (mutexes, semáforos)
 - [ ] Interface para enviar velocidade, comandos e ler velocidade
+- [ ] Ao invés de mandar a voltagem pra ui como float, melhor mandar como inteiro e colocar um ponto de mentira no ui?

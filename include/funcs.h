@@ -4,28 +4,66 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <sys/ioctl.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 #include <sys/time.h>
 #include <net/if.h>
 #include <linux/can.h>
 #include <linux/can/raw.h>
 #include <unistd.h>
 #include <pthread.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <termios.h>
 #include <ncurses.h>
-#include <string.h>
+#include <menu.h>
+#include <stdlib.h>
+#include <fcntl.h>
 
 #define CAN_RECV_TIMEOUT_USECONDS 200000
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
-struct ThreadData {
-    int socket_descriptor;
-    // Add any other arguments here
+extern int sharedCounter;
+extern pthread_mutex_t mutex;
+extern uint16_t sharedCommandedSpeed = 0;
+extern uint16_t sharedLogicalState = 0;
+extern uint16_t sharedInverterBatteryVoltage = 0;
+extern uint16_t sharedInverterMosfetTemperature1 = 0;
+extern uint16_t sharedInverterMosfetTemperature2 = 0;
+extern uint16_t sharedMotorCurrent = 0;
+extern uint16_t sharedMotorVoltage = 0;
+extern uint16_t sharedBMSVoltage = 0;
+extern uint16_t sharedBMSCurrent = 0;
+extern uint16_t shareBMSTemperature = 0;
+extern uint16_t sharedBMSReaminingCapacity = 0;
+extern uint16_t sharedBMSTotalCapacity = 0;
+
+char *choices[] = {
+    "Choice 1",
+    "Choice 2",
+    "Choice 3",
+    "Choice 4",
+    "Exit",
+    (char *)NULL,
 };
+
+volatile int interrupted = 0;
+
+struct message {
+    long mtype;
+    char mtext[256];
+};
+
+struct telegramThreadData {
+    int socket_descriptor;
+};
+
+void sigintHandler(int sig_num) {
+    interrupted = 1;
+}
 
 uint8_t serialSendReceive (const char *serial_interface, uint8_t byte) {
     int serial_port = open(serial_interface, O_RDWR);
@@ -79,16 +117,10 @@ uint8_t serialSendReceive (const char *serial_interface, uint8_t byte) {
         for (int x = 0; x < 47; x++){
             printf(" %02X", buffer[x]);
         }
-        int batteryVoltage = (buffer[4] << 8) | (buffer[5]);
-        printf("Battery Voltage: %d mV\n", batteryVoltage);
-        int batteryCurrent = (buffer[6] << 8) | (buffer[7]);
-        printf("Battery Current: %d mA\n", batteryCurrent);
-        printf("Power Output: %d\n", batteryCurrent * batteryVoltage);
-        
-        int remainingCapacity = (buffer[8] << 8) | (buffer[9]);
-        printf("Remaining Capacity: %d mAH\n", remainingCapacity*10);
-        int totalCapacity = (buffer[10] << 8) | (buffer[11]);
-        printf("Total Capacity: %d mA\n", totalCapacity*10);
+        int sharedBMSVoltage = (buffer[4] << 8) | (buffer[5]);
+        int sharedBMSCurrent = (buffer[6] << 8) | (buffer[7]);
+        int sharedBMSRemainingCapacity = (buffer[8] << 8) | (buffer[9]);
+        int sharedBMSTotalCapacity = (buffer[10] << 8) | (buffer[11]);
 
     }
 
@@ -107,7 +139,9 @@ int sendTelegram(int s, struct can_frame *frame) {
     return 0;
 }
 
-void telegramReceivePrint(int s) {
+void *telegramReceivePrint(void * arg) {
+    struct telegramThreadData *args = (struct telegramThreadData *)arg;
+    int s = args->socket_descriptor;
 
     struct can_frame frame;
     while (1) {
@@ -126,35 +160,39 @@ void telegramReceivePrint(int s) {
         //     printf("\n"); 
         // }
         if (frame.can_id == 0x680) {
-            printf("Logical State ID: 0x%X, LEN: %d, DATA: ", frame.can_id, frame.can_dlc);
-            printf("\n"); 
+            // printf("Logical State ID: 0x%X, LEN: %d, DATA: ", frame.can_id, frame.can_dlc);
+            // printf("\n"); 
+            pthread_mutex_lock(&mutex);
+            sharedLogicalState = (frame.data[1] << 8) | (frame.data[0]);
+            pthread_mutex_unlock(&mutex);
         }
         if (frame.can_id == 0x07) {
-            int temp = 0;
-            temp = (frame.data[1] << 8) | (frame.data[0]);
-            float tempf = ((float)temp) / 10;
-            printf("Battery Voltage %.1f\n", tempf);
+            // int temp = 0;
+            // temp = (frame.data[1] << 8) | (frame.data[0]);
+            // float tempf = ((float)temp) / 10;
+            // printf("Battery Voltage %.1f\n", tempf);
         }
         if (frame.can_id == 0x04) {
-            int temp = 0;
-            temp = (frame.data[1] << 8) | (frame.data[0]);
-            float tempf = ((float)temp) / 10;
-            printf("Battery Voltage %.1f\n", tempf);
+            // int temp = 0;
+            // temp = (frame.data[1] << 8) | (frame.data[0]);
+            // float tempf = ((float)temp) / 10;
+            // printf("Battery Voltage %.1f\n", tempf);
         }
         if (frame.can_id == 0x03) {
-            int temp = 0;
-            temp = (frame.data[1] << 8) | (frame.data[0]);
-            float tempf = ((float)temp) / 10;
-            printf("Motor Current %.1f\n", tempf);
+            // int temp = 0;
+            // temp = (frame.data[1] << 8) | (frame.data[0]);
+            // float tempf = ((float)temp) / 10;
+            // printf("Motor Current %.1f\n", tempf);
         }
 
         if (frame.can_id == 0x30) {
-            int temp = 0;
-            temp = (frame.data[1] << 8) | (frame.data[0]);
-            float tempf = ((float)temp) / 10;
-            printf("Mosfet 1 Temperature %.1f | %X %X\n", tempf);
+            // int temp = 0;
+            // temp = (frame.data[1] << 8) | (frame.data[0]);
+            // float tempf = ((float)temp) / 10;
+            // printf("Mosfet 1 Temperature %.1f | %X %X\n", tempf);
         }
     }
+    return NULL;
 }
 
 uint16_t telegramReceive2(int s) {
@@ -192,6 +230,101 @@ uint16_t telegramReceive2(int s) {
         }
     }
     return (uint16_t) (-1); 
+}
+
+void *windowLoop(void* arg) {
+    initscr();
+    raw();
+    keypad(stdscr, TRUE);
+    noecho();
+    cbreak();
+    curs_set(0);
+    start_color();
+    init_pair(1, COLOR_BLACK, COLOR_WHITE);
+    init_pair(2, COLOR_BLUE, COLOR_BLUE);
+    refresh();
+
+    int row, col, c, i;
+    getmaxyx(stdscr, row, col);
+
+    WINDOW *win = newwin(row - 2, col - 2, 1, 1);
+    WINDOW *my_menu_win;
+    nodelay(win, TRUE);
+    nodelay(stdscr, TRUE);
+    nodelay(my_menu_win, TRUE);
+
+    bkgd(COLOR_PAIR(2));
+
+    int n_choices = ARRAY_SIZE(choices);
+    ITEM **my_items = (ITEM **)calloc(n_choices + 1, sizeof(ITEM *));
+    MENU *my_menu;
+
+    for (int i = 0; i < n_choices; i++) {
+        my_items[i] = new_item(choices[i], choices[i]);
+    }
+    my_items[n_choices] = (ITEM *)NULL;
+    my_menu = new_menu((ITEM **)my_items);
+    set_menu_fore(my_menu, COLOR_PAIR(1) | A_REVERSE);
+    my_menu_win = newwin(10, 40, 4, 1);
+    keypad(my_menu_win, TRUE);
+
+    set_menu_win(my_menu, win);
+    set_menu_sub(my_menu, derwin(win, 6, 24, 3, 36));
+
+    set_menu_mark(my_menu, " * ");
+    /* Print a border around the main window and print a title */
+    box(win, 0, 0);
+
+    // mvwaddch(win, 2, 0, ACS_LTEE);
+    // mvwhline(win, 2, 1, ACS_HLINE, 38);
+    // mvwaddch(win, 2, 39, ACS_RTEE);
+    mvprintw(LINES - 2, 0, "F1 to exit");
+    mvwprintw(win, 1, 1, "My Menu");
+    refresh();
+
+    /* Post the menu */
+    post_menu(my_menu);
+    wattron(win, COLOR_PAIR(1));
+    mvwprintw(win, 0, 1, "Hello World!");
+    wattroff(win, COLOR_PAIR(1));
+
+    wbkgd(win, COLOR_PAIR(1));
+    set_menu_back(my_menu, COLOR_PAIR(1));
+    wrefresh(win);                                                      
+    int index;
+    char str[10];
+
+    while (1) {
+        c = getch();                                                                                                                             
+        switch (c) {
+            case KEY_DOWN:
+                menu_driver(my_menu, REQ_DOWN_ITEM);
+                break;
+            case KEY_UP:
+                wbkgd(win, COLOR_PAIR(1));
+                menu_driver(my_menu, REQ_UP_ITEM);
+                break;
+        }
+        sprintf(str, "Counter: %d", sharedCounter);
+        mvwprintw(win, 2, 1, str);
+        if(c == 10) {
+            mvwprintw(win, 0, 30, "Item selected is : %s", item_name(current_item(my_menu)));
+            break;
+        }
+        wrefresh(win);
+    }
+    wrefresh(win);
+    refresh();
+
+    getch();
+
+    unpost_menu(my_menu);
+    free_menu(my_menu);
+    for (i = 0; i < n_choices; ++i)
+        free_item(my_items[i]);
+    endwin();
+
+    return 0;
 }
 
 int createCANSocket(const char* interface_name) {

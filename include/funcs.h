@@ -38,7 +38,7 @@ extern uint16_t sharedMotorVoltage = 0;
 extern uint16_t sharedBMSVoltage = 0;
 extern uint16_t sharedBMSCurrent = 0;
 extern uint16_t shareBMSTemperature = 0;
-extern uint16_t sharedBMSReaminingCapacity = 0;
+extern uint16_t sharedBMSRemainingCapacity = 0;
 extern uint16_t sharedBMSTotalCapacity = 0;
 
 char *choices[] = {
@@ -177,6 +177,9 @@ void *telegramReceivePrint(void * arg) {
             // temp = (frame.data[1] << 8) | (frame.data[0]);
             // float tempf = ((float)temp) / 10;
             // printf("Battery Voltage %.1f\n", tempf);
+            pthread_mutex_lock(&mutex);
+            sharedInverterBatteryVoltage = (frame.data[1] << 8) | (frame.data[0]);
+            pthread_mutex_unlock(&mutex);
         }
         if (frame.can_id == 0x03) {
             // int temp = 0;
@@ -244,6 +247,9 @@ void *windowLoop(void* arg) {
     init_pair(2, COLOR_BLUE, COLOR_BLUE);
     refresh();
 
+    struct timespec start, end;
+    double elapsed_time = 0;
+
     int row, col, c, i;
     getmaxyx(stdscr, row, col);
 
@@ -269,32 +275,41 @@ void *windowLoop(void* arg) {
     keypad(my_menu_win, TRUE);
 
     set_menu_win(my_menu, win);
-    set_menu_sub(my_menu, derwin(win, 6, 24, 3, 36));
+    set_menu_sub(my_menu, derwin(win, 6, 24, 3, 120));
 
     set_menu_mark(my_menu, " * ");
     /* Print a border around the main window and print a title */
+    mvwvline(win, 0, 40, ACS_VLINE, 38);
+    mvwvline(win, 0, 40 + 37 + 1, ACS_VLINE, 38);
+
     box(win, 0, 0);
 
-    // mvwaddch(win, 2, 0, ACS_LTEE);
-    // mvwhline(win, 2, 1, ACS_HLINE, 38);
-    // mvwaddch(win, 2, 39, ACS_RTEE);
     mvprintw(LINES - 2, 0, "F1 to exit");
-    mvwprintw(win, 1, 1, "My Menu");
+    mvwprintw(win, 1, 1, " * Inverter Parameters:");
+    mvwprintw(win, 1, 41, " * BMS  Parameters:");
+    mvwprintw(win, 1, 41 + 40, "* Logical State:");
     refresh();
 
     /* Post the menu */
     post_menu(my_menu);
     wattron(win, COLOR_PAIR(1));
-    mvwprintw(win, 0, 1, "Hello World!");
+    mvwprintw(win, 0, 1, "Car Dashboard and Control Panel");
     wattroff(win, COLOR_PAIR(1));
 
     wbkgd(win, COLOR_PAIR(1));
     set_menu_back(my_menu, COLOR_PAIR(1));
     wrefresh(win);                                                      
     int index;
-    char str[10];
-
+    double oldTime, meanTime, maxTime = 0;
+    char str[100];
+    
     while (1) {
+        clock_gettime(CLOCK_MONOTONIC, &start);
+        sprintf(str, "Latency: %e", oldTime);
+        mvwprintw(win, row - 4, 1, str);
+
+        sprintf(str, "Max. Latency: %e", maxTime);
+        mvwprintw(win, row - 4, 41, str);
         c = getch();                                                                                                                             
         switch (c) {
             case KEY_DOWN:
@@ -305,11 +320,40 @@ void *windowLoop(void* arg) {
                 menu_driver(my_menu, REQ_UP_ITEM);
                 break;
         }
-        sprintf(str, "Counter: %d", sharedCounter);
-        mvwprintw(win, 2, 1, str);
+
+        sprintf(str, " Battery Voltage (inverter): %0.1fV", (float)sharedInverterBatteryVoltage/10);
+        mvwprintw(win, 3, 1, str);
+        sprintf(str, " Motor Current:              %0.1fA", (float)sharedMotorCurrent/10);
+        mvwprintw(win, 4, 1, str);
+        sprintf(str, " Motor Voltage:              %0.1fV", (float)sharedMotorVoltage/10);
+        mvwprintw(win, 5, 1, str);
+        sprintf(str, " Mosfet 1 Temperature:       %0.1fºC", (float)sharedInverterMosfetTemperature2/10);
+        mvwprintw(win, 6, 1, str);
+        sprintf(str, " Mosfet 2 Temperature:       %0.1fºC", (float)sharedInverterMosfetTemperature1/10);
+        mvwprintw(win, 7, 1, str);
+
+        sprintf(str, " Battery Voltage (BMS):      %0.1fV", (float)sharedBMSVoltage/10);
+        mvwprintw(win, 3, 41, str);
+        sprintf(str, " Battery Current:            %0.1fA", (float)sharedBMSCurrent/10);
+        mvwprintw(win, 4, 41, str);
+        sprintf(str, " Battery Temperature:        %0.1fºC", (float)shareBMSTemperature/10);
+        mvwprintw(win, 5, 41, str);
+        sprintf(str, " Remaining Capacity:         %0.1fAh", (float)sharedBMSRemainingCapacity/10);
+        mvwprintw(win, 6, 41, str);
+        sprintf(str, " Total Capacity:             %0.1fAh", (float)sharedBMSTotalCapacity/10);
+        mvwprintw(win, 7, 41, str);
+        
+
         if(c == 10) {
             mvwprintw(win, 0, 30, "Item selected is : %s", item_name(current_item(my_menu)));
             break;
+        }
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        elapsed_time = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+        meanTime = (meanTime + elapsed_time) / 2;
+        oldTime = elapsed_time;
+        if(meanTime > maxTime) {
+            maxTime = meanTime;
         }
         wrefresh(win);
     }

@@ -4,18 +4,19 @@ const char *serial_interface = "/dev/ttyUSB0";
 const char *can_interface = "vcan0";
 
 int sharedCounter = 0;
-uint16_t sharedCommandedSpeed = 0;
-uint16_t sharedLogicalState = 0;
-uint16_t sharedInverterBatteryVoltage = 0;
-uint16_t sharedInverterMosfetTemperature1 = 0;
-uint16_t sharedInverterMosfetTemperature2 = 0;
-uint16_t sharedMotorCurrent = 0;
-uint16_t sharedMotorVoltage = 0;
-uint16_t sharedBMSVoltage = 0;
-uint16_t sharedBMSCurrent = 0;
-uint16_t shareBMSTemperature = 0;
-uint16_t sharedBMSReaminingCapacity = 0;
-uint16_t sharedBMSTotalCapacity = 0;
+uint16_t sharedCommandedSpeed;
+uint16_t sharedLogicalState;
+uint16_t sharedInverterBatteryVoltage;
+uint16_t sharedInverterMosfetTemperature1;
+uint16_t sharedInverterMosfetTemperature2;
+uint16_t sharedMotorCurrent;
+uint16_t sharedMotorVoltage;
+
+uint16_t sharedBMSVoltage;
+uint16_t sharedBMSCurrent;
+uint16_t shareBMSTemperature;
+uint16_t sharedBMSRemainingCapacity;
+uint16_t sharedBMSTotalCapacity;
 
 pthread_mutex_t mutex;
 

@@ -35,7 +35,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 compile: $(TARGET)
 
 run:
-	./bin/superloop -s 100
+	./bin/superloop
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
 

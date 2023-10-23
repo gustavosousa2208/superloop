@@ -1,6 +1,6 @@
 
-#define _POSIX_C_SOURCE 199309L
 #include "funcs.h"
+
 
 extern const char *serial_interface;
 extern const char *can_interface;

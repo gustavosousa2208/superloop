@@ -1,17 +1,17 @@
 CC_x86_64 = gcc
 CC_aarch64 = aarch64-linux-gnu-gcc
 
-ifeq ($(OS),x86_64)
-	CC := $(CC_x86_64)
+ifeq ($(shell uname -p),x86_64)
+	CC = $(CC_x86_64)
 else
-	CC := $(CC_aarch64)
+	CC = $(CC_aarch64)
 endif
 
-CFLAGS = -Wall -Iinclude
+CFLAGS = -Iinclude -w
 SRC_DIR = src
 OBJ_DIR = obj
 BIN_DIR = bin
-PFLAGS = -lncurses -ltinfo -lmenu -lpthread -std=cgnu89
+PFLAGS = -lncurses -ltinfo -lmenu -lpthread -std=gnu99
 
 # List of source files (excluding .c extension)
 SRC_FILES = $(notdir $(basename $(wildcard $(SRC_DIR)/*.c)))

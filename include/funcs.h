@@ -4,26 +4,26 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/select.h>
-#include <netinet/in.h>
-#include <sys/ioctl.h>
-#include <sys/ipc.h>
-#include <sys/msg.h>
+#include <pthread.h>
+#include <unistd.h>
+
 #include <sys/time.h>
-#include <time.h>
-#include <net/if.h>
+#include <sys/types.h>
+
 #include <linux/can.h>
 #include <linux/can/raw.h>
-#include <unistd.h>
-#include <pthread.h>
+#include <sys/ioctl.h>
+
 #include <termios.h>
+
 #include <ncurses.h>
 #include <menu.h>
-#include <stdlib.h>
+
 #include <fcntl.h>
+
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <net/if.h>
 
 #define CAN_RECV_TIMEOUT_USECONDS 200000
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))

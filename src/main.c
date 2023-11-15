@@ -1,7 +1,7 @@
 #include "funcs.h"
 
 const char *serial_interface = "/dev/tnt0"; // ttyUSB0 esse ai e virtual
-const char *can_interface = "can0";
+const char *can_interface = "vcan0";
 
 int sharedCounter = 0;
 volatile int interrupted;

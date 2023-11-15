@@ -4,19 +4,8 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "gcc",
-            "args": [
-                "-g",
-                "-I${workspaceFolder}/include",
-                "${workspaceFolder}/src/*.c",
-                "-o",
-                "${workspaceFolder}/bin/superloop",
-                "-lncurses",
-                "-ltinfo", 
-                "-lmenu",
-                "-lpthread",
-                "-std=gnu99"
-            ],
+            "command": "make",
+            "args": ["compile"],
             "group": {
                 "kind": "build",
                 "isDefault": true

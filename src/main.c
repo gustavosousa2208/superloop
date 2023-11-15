@@ -24,6 +24,8 @@ uint16_t sharedBMSTotalCapacity;
 pthread_mutex_t incomingDataMutex;
 pthread_mutex_t canInterfaceMutex;
 
+const int desiredPort = 65000;
+
 int mainFlow () {
     int sock = createCANSocket(can_interface);
     
@@ -98,6 +100,7 @@ int getCommandLineArguments(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
+    createETHSocket();
     mainFlow();
     return 0;
 }

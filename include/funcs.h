@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
 
@@ -24,6 +25,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <net/if.h>
+#include <arpa/inet.h>
+
 
 #define CAN_RECV_TIMEOUT_USECONDS 200000
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))

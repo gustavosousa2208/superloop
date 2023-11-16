@@ -1,17 +1,19 @@
 import sys, os, time
 
+interface = "vcan0"
+
 def sendMessages():
     while True:
         try:
             print(".", end="")
-            os.system("cansend vcan1 003#7902")
-            os.system("cansend vcan1 004#7902")
-            os.system("cansend vcan1 007#7902")
-            os.system("cansend vcan1 030#3501")
-            os.system("cansend vcan1 033#3501")
-            os.system("cansend vcan1 034#3501")
-            os.system("cansend vcan1 680#010F")
-            os.system("cansend vcan1 685#0000")
+            os.system(f"cansend {interface} 003#7902")
+            os.system(f"cansend {interface} 004#7902")
+            os.system(f"cansend {interface} 007#7902")
+            os.system(f"cansend {interface} 030#3501")
+            os.system(f"cansend {interface} 033#3501")
+            os.system(f"cansend {interface} 034#3501")
+            os.system(f"cansend {interface} 680#010F")
+            os.system(f"cansend {interface} 685#0000")
             time.sleep(0.100)
         except KeyboardInterrupt:
             print("Exiting...")

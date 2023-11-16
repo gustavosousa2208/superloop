@@ -38,15 +38,13 @@ int mainFlow () {
     pthread_t canThread, uiThread, BMSThread;
     struct canReadThreadDataStruct canThreadData;
     canThreadData.socket_descriptor = sock;
-    struct BMSThreadDataStruct BMSThreadData;
-    BMSThreadData.serial_interface = serial_interface;
 
     if(pthread_create(&canThread, NULL, readInverterData, &canThreadData)){
         perror("can thread create");
         return 1;
     }
 
-    if(pthread_create(&BMSThread, NULL, serialSendReceive, &BMSThreadData)){
+    if(pthread_create(&BMSThread, NULL, serialSendReceive, NULL)){
         perror("BMS thread create");
         return 1;
     }
@@ -56,12 +54,26 @@ int mainFlow () {
         return 1;
     }
 
+    while(1) {
+        
+    }
+
     if (pthread_join(canThread, NULL) != 0) {
+        perror("pthread_join");
+        return 1;
+    }
+    if (pthread_join(BMSThread, NULL) != 0) {
+        perror("pthread_join");
+        return 1;
+    }
+    if (pthread_join(uiThread, NULL) != 0) {
         perror("pthread_join");
         return 1;
     }
 
     pthread_mutex_destroy(&incomingDataMutex);
+    pthread_mutex_destroy(&serialInterfaceMutex);
+    pthread_mutex_destroy(&canInterfaceMutex);
 
     printf("Thread has finished.\n");
     return 0;
@@ -100,7 +112,7 @@ int getCommandLineArguments(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
     // createETHSocket();
     // printf("starting...");
-    // serialSendReceive(NULL);
-    mainFlow();
+    serialSendReceive(NULL);
+    // mainFlow();
     return 0;
 }

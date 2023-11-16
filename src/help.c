@@ -92,8 +92,8 @@ void sigintHandler(int sig_num) {
     interrupted = 1;
 }
 
-uint8_t serialSendReceive (void* arg) {
-    int serial_port = open(serial_interface, O_RDWR);
+void *serialSendReceive (void* arg) {
+    int serial_port = open(serial_interface, O_RDWR | O_NOCTTY);
     if (serial_port < 0) {
         perror("Error opening serial port");
         return 1;
@@ -120,43 +120,47 @@ uint8_t serialSendReceive (void* arg) {
     tty.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG); // Set raw input
     tty.c_oflag &= ~OPOST;                          // Set raw output
 
-    // Set the read() function to return immediately with no data available
-    tty.c_cc[VMIN] = 1;
-    tty.c_cc[VTIME] = 1;
+    tty.c_cc[VMIN] = 34;
+    tty.c_cc[VTIME] = 0;
 
     if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
         perror("Error from tcsetattr");
         return 1;
     }
 
-    // Write data to the serial port
+    uint8_t buffer[to_read] = {0};
+    uint8_t message[] = {0xdd, 0xa5, 0x03, 0x00, 0xff, 0xfd, 0x77};
+    uint8_t dummy[] = {0xff};
     while(1) {
-        uint8_t message[] = {0xdd, 0xa5, 0x03, 0x00, 0xff, 0xfd, 0x77};
-        write(serial_port, message, sizeof(message));
-
-        // Read data from the serial port
-        uint8_t buffer[47];
-        int nbytes = read(serial_port, buffer, sizeof(buffer));
+        for(int k = 0; k < to_read; k++) {
+            buffer[k] = 0;
+        }
+        pthread_mutex_lock(&serialInterfaceMutex);
+        write(serial_port, message, 7);
+        usleep(1000);
+        int nbytes = read(serial_port, buffer, to_read);
+        pthread_mutex_unlock(&serialInterfaceMutex);
         if (nbytes < 0) {
-            // perror("Error reading from serial port");
+            perror("Error reading from serial port");
             return 1;
         } else {
-            // printf("Received :");
-            // for (int x = 0; x < 47; x++){
-            //     printf(" %02X", buffer[x]);
-            // }
-            // printf("\n");
-            pthread_mutex_lock(&serialInterfaceMutex);
-            int sharedBMSVoltage = (buffer[4] << 8) | (buffer[5]);
-            int sharedBMSCurrent = (buffer[6] << 8) | (buffer[7]);
-            int sharedBMSRemainingCapacity = (buffer[8] << 8) | (buffer[9]);
-            int sharedBMSTotalCapacity = (buffer[10] << 8) | (buffer[11]);
-            pthread_mutex_unlock(&serialInterfaceMutex);
+            printf("Received :");
+            for (int x = 0; x < to_read; x++){
+                printf(" %02X", buffer[x]);
+            }
+            printf("\n");
+            pthread_mutex_lock(&incomingDataMutex);
+            sharedBMSVoltage = (buffer[4] << 8) | (buffer[5]);
+            sharedBMSCurrent = (buffer[6] << 8) | (buffer[7]);
+            sharedBMSRemainingCapacity = (buffer[8] << 8) | (buffer[9]);
+            sharedBMSTotalCapacity = (buffer[10] << 8) | (buffer[11]);
+            pthread_mutex_unlock(&incomingDataMutex);
         }
+        write(serial_port, dummy, 1);
+        usleep(1000000);
     }
-
     close(serial_port);
-    return 0;
+    return;
 }
 
 void *sendInverterData(void * arg) {
@@ -382,13 +386,25 @@ void *windowLoop(void* arg) {
         temp = sharedBMSVoltage;
         pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 3, 41, str);
+
+        pthread_mutex_lock(&serialInterfaceMutex);
         sprintf(str, " Battery Current:            %0.1fA", (float)sharedBMSCurrent/10);
+        pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 4, 41, str);
+        
+        pthread_mutex_lock(&serialInterfaceMutex);
         sprintf(str, " Battery Temperature:        %0.1fC", (float)shareBMSTemperature/10);
+        pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 5, 41, str);
+        
+        pthread_mutex_lock(&serialInterfaceMutex);
         sprintf(str, " Remaining Capacity:         %0.1fAh", (float)sharedBMSRemainingCapacity/10);
+        pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 6, 41, str);
+        
+        pthread_mutex_lock(&serialInterfaceMutex);
         sprintf(str, " Total Capacity:             %0.1fAh", (float)sharedBMSTotalCapacity/10);
+        pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 7, 41, str);
 
         ok = (sharedLogicalState & 8) > 0 ? '*' : ' ';

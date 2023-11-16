@@ -31,6 +31,7 @@
 #define CAN_RECV_TIMEOUT_USECONDS 200000
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 extern char *choices[];
+#define to_read 47
 
 struct message {
     long mtype;
@@ -51,7 +52,7 @@ struct canSendThreadDataStruct {
 };
 
 void *sendInverterData(void * arg);
-uint8_t serialSendReceive (void* arg);
+void *serialSendReceive (void* arg);
 int sendTelegram(int s, struct can_frame *frame);
 void *readInverterData(void * arg);
 uint16_t telegramReceive2(int s);

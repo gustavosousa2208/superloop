@@ -1,7 +1,7 @@
 #include "funcs.h"
 
-const char *serial_interface = "/dev/tnt0"; // ttyUSB0 esse ai e virtual
-const char *can_interface = "vcan0";
+const char *serial_interface = "/dev/ttyUSB0"; // ttyUSB0 esse ai e virtual
+const char *can_interface = "can0";
 
 int sharedCounter = 0;
 volatile int interrupted;
@@ -21,8 +21,9 @@ uint16_t shareBMSTemperature;
 uint16_t sharedBMSRemainingCapacity;
 uint16_t sharedBMSTotalCapacity;
 
-pthread_mutex_t incomingDataMutex;
-pthread_mutex_t canInterfaceMutex;
+pthread_mutex_t incomingDataMutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t canInterfaceMutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t serialInterfaceMutex = PTHREAD_MUTEX_INITIALIZER;
 
 const int desiredPort = 65000;
 
@@ -34,12 +35,19 @@ int mainFlow () {
         return 1;
     }
 
-    pthread_t canThread, uiThread;
+    pthread_t canThread, uiThread, BMSThread;
     struct canReadThreadDataStruct canThreadData;
     canThreadData.socket_descriptor = sock;
+    struct BMSThreadDataStruct BMSThreadData;
+    BMSThreadData.serial_interface = serial_interface;
 
     if(pthread_create(&canThread, NULL, readInverterData, &canThreadData)){
         perror("can thread create");
+        return 1;
+    }
+
+    if(pthread_create(&BMSThread, NULL, serialSendReceive, &BMSThreadData)){
+        perror("BMS thread create");
         return 1;
     }
 
@@ -47,16 +55,6 @@ int mainFlow () {
         perror("ui thread create");
         return 1;
     }
-
-    // int oldCounter = sharedCounter;
-    // while(1){
-    //     if(sharedCounter != oldCounter) {
-    //         oldCounter = sharedCounter;
-    //         printf("Counter: %d\n", sharedCounter);
-    //     }
-    // }
-
-
 
     if (pthread_join(canThread, NULL) != 0) {
         perror("pthread_join");
@@ -100,7 +98,9 @@ int getCommandLineArguments(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[]) {
-    createETHSocket();
+    // createETHSocket();
+    // printf("starting...");
+    // serialSendReceive(NULL);
     mainFlow();
     return 0;
 }

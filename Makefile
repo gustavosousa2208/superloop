@@ -7,11 +7,11 @@ else
 	CC = $(CC_aarch64)
 endif
 
-CFLAGS = -Iinclude -w
+CFLAGS = -g -Iinclude -w
 SRC_DIR = src
 OBJ_DIR = obj
 BIN_DIR = bin
-PFLAGS = -lncurses -ltinfo -lmenu -lpthread -std=gnu99
+PFLAGS = -lncurses -ltinfo -lmenu -pthread -std=gnu99
 
 # List of source files (excluding .c extension)
 SRC_FILES = $(notdir $(basename $(wildcard $(SRC_DIR)/*.c)))
@@ -26,13 +26,13 @@ all: clean $(TARGET) run
 
 $(TARGET): $(OBJ_FILES)
 	@mkdir -p $(BIN_DIR) 
-	$(CC) $^ -o $@ $(PFLAGS)
+	$(CC) -g $^ -o $@ $(PFLAGS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-compile: $(TARGET)
+compile: clean $(TARGET)
 
 run:
 	./bin/superloop

@@ -37,6 +37,10 @@ struct message {
     char mtext[256];
 };
 
+struct BMSThreadDataStruct {
+    const char *serial_interface;
+};
+
 struct canReadThreadDataStruct {
     int socket_descriptor;
 };
@@ -47,7 +51,7 @@ struct canSendThreadDataStruct {
 };
 
 void *sendInverterData(void * arg);
-uint8_t serialSendReceive (const char *serial_interface, uint8_t byte);
+uint8_t serialSendReceive (void* arg);
 int sendTelegram(int s, struct can_frame *frame);
 void *readInverterData(void * arg);
 uint16_t telegramReceive2(int s);

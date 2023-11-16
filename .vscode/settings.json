@@ -5,6 +5,7 @@
     "python.formatting.provider": "none",
     "files.associations": {
         "features.h": "c",
-        "termios.h": "c"
+        "termios.h": "c",
+        "can.h": "c"
     }
 }

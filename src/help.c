@@ -16,8 +16,11 @@ char *choices[] = {
 };
 
 extern int sharedCounter;
+
 extern pthread_mutex_t incomingDataMutex;
 extern pthread_mutex_t canInterfaceMutex;
+extern pthread_mutex_t serialInterfaceMutex;
+
 extern uint16_t sharedCommandedSpeed;
 extern uint16_t sharedLogicalState;
 extern uint16_t sharedInverterBatteryVoltage;
@@ -89,7 +92,7 @@ void sigintHandler(int sig_num) {
     interrupted = 1;
 }
 
-uint8_t serialSendReceive (const char *serial_interface, uint8_t byte) {
+uint8_t serialSendReceive (void* arg) {
     int serial_port = open(serial_interface, O_RDWR);
     if (serial_port < 0) {
         perror("Error opening serial port");
@@ -127,25 +130,29 @@ uint8_t serialSendReceive (const char *serial_interface, uint8_t byte) {
     }
 
     // Write data to the serial port
-    uint8_t message[] = {0xdd, 0xa5, 0x03, 0x00, 0xff, 0xfd, 0x77};
-    write(serial_port, message, sizeof(message));
+    while(1) {
+        uint8_t message[] = {0xdd, 0xa5, 0x03, 0x00, 0xff, 0xfd, 0x77};
+        write(serial_port, message, sizeof(message));
 
-    // Read data from the serial port
-    uint8_t buffer[47];
-    int nbytes = read(serial_port, buffer, sizeof(buffer));
-    if (nbytes < 0) {
-        perror("Error reading from serial port");
-        return 1;
-    } else {
-        printf("Received :");
-        for (int x = 0; x < 47; x++){
-            printf(" %02X", buffer[x]);
+        // Read data from the serial port
+        uint8_t buffer[47];
+        int nbytes = read(serial_port, buffer, sizeof(buffer));
+        if (nbytes < 0) {
+            // perror("Error reading from serial port");
+            return 1;
+        } else {
+            // printf("Received :");
+            // for (int x = 0; x < 47; x++){
+            //     printf(" %02X", buffer[x]);
+            // }
+            // printf("\n");
+            pthread_mutex_lock(&serialInterfaceMutex);
+            int sharedBMSVoltage = (buffer[4] << 8) | (buffer[5]);
+            int sharedBMSCurrent = (buffer[6] << 8) | (buffer[7]);
+            int sharedBMSRemainingCapacity = (buffer[8] << 8) | (buffer[9]);
+            int sharedBMSTotalCapacity = (buffer[10] << 8) | (buffer[11]);
+            pthread_mutex_unlock(&serialInterfaceMutex);
         }
-        int sharedBMSVoltage = (buffer[4] << 8) | (buffer[5]);
-        int sharedBMSCurrent = (buffer[6] << 8) | (buffer[7]);
-        int sharedBMSRemainingCapacity = (buffer[8] << 8) | (buffer[9]);
-        int sharedBMSTotalCapacity = (buffer[10] << 8) | (buffer[11]);
-
     }
 
     close(serial_port);
@@ -354,7 +361,9 @@ void *windowLoop(void* arg) {
                 break;
         }
 
+        pthread_mutex_lock(&incomingDataMutex);
         sprintf(str, " Battery Voltage (inverter): %0.1fV", (float)sharedInverterBatteryVoltage/10);
+        pthread_mutex_unlock(&incomingDataMutex);
         mvwprintw(win, 3, 1, str);
         sprintf(str, " Motor Current:              %0.1fA", (float)sharedMotorCurrent/10);
         mvwprintw(win, 4, 1, str);
@@ -367,7 +376,11 @@ void *windowLoop(void* arg) {
         sprintf(str, " Internal Air Temperature    %0.1fC", (float)sharedInverterMosfetTemperature1/10);
         mvwprintw(win, 8, 1, str);
 
+        uint16_t temp;
+        pthread_mutex_lock(&serialInterfaceMutex);
         sprintf(str, " Battery Voltage (BMS):      %0.1fV", (float)sharedBMSVoltage/10);
+        temp = sharedBMSVoltage;
+        pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 3, 41, str);
         sprintf(str, " Battery Current:            %0.1fA", (float)sharedBMSCurrent/10);
         mvwprintw(win, 4, 41, str);

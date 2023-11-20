@@ -120,7 +120,7 @@ void *serialSendReceive (void* arg) {
     tty.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG); // Set raw input
     tty.c_oflag &= ~OPOST;                          // Set raw output
 
-    tty.c_cc[VMIN] = 34;
+    tty.c_cc[VMIN] = to_read;
     tty.c_cc[VTIME] = 0;
 
     if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
@@ -137,18 +137,12 @@ void *serialSendReceive (void* arg) {
         }
         pthread_mutex_lock(&serialInterfaceMutex);
         write(serial_port, message, 7);
-        usleep(1000);
         int nbytes = read(serial_port, buffer, to_read);
         pthread_mutex_unlock(&serialInterfaceMutex);
         if (nbytes < 0) {
             perror("Error reading from serial port");
             return 1;
         } else {
-            printf("Received :");
-            for (int x = 0; x < to_read; x++){
-                printf(" %02X", buffer[x]);
-            }
-            printf("\n");
             pthread_mutex_lock(&incomingDataMutex);
             sharedBMSVoltage = (buffer[4] << 8) | (buffer[5]);
             sharedBMSCurrent = (buffer[6] << 8) | (buffer[7]);
@@ -157,7 +151,6 @@ void *serialSendReceive (void* arg) {
             pthread_mutex_unlock(&incomingDataMutex);
         }
         write(serial_port, dummy, 1);
-        usleep(1000000);
     }
     close(serial_port);
     return;
@@ -380,30 +373,28 @@ void *windowLoop(void* arg) {
         sprintf(str, " Internal Air Temperature    %0.1fC", (float)sharedInverterMosfetTemperature1/10);
         mvwprintw(win, 8, 1, str);
 
-        uint16_t temp;
         pthread_mutex_lock(&serialInterfaceMutex);
-        sprintf(str, " Battery Voltage (BMS):      %0.1fV", (float)sharedBMSVoltage/10);
-        temp = sharedBMSVoltage;
+        sprintf(str, " Battery Voltage (BMS):      %0.1fV", (float)sharedBMSVoltage/100);
         pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 3, 41, str);
 
         pthread_mutex_lock(&serialInterfaceMutex);
-        sprintf(str, " Battery Current:            %0.1fA", (float)sharedBMSCurrent/10);
+        sprintf(str, " Battery Current:            %0.1fA", (float)sharedBMSCurrent/100);
         pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 4, 41, str);
         
         pthread_mutex_lock(&serialInterfaceMutex);
-        sprintf(str, " Battery Temperature:        %0.1fC", (float)shareBMSTemperature/10);
+        sprintf(str, " Battery Temperature:        %0.1fC", (float)shareBMSTemperature/100);
         pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 5, 41, str);
         
         pthread_mutex_lock(&serialInterfaceMutex);
-        sprintf(str, " Remaining Capacity:         %0.1fAh", (float)sharedBMSRemainingCapacity/10);
+        sprintf(str, " Remaining Capacity:         %0dAh", (float)sharedBMSRemainingCapacity);
         pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 6, 41, str);
         
         pthread_mutex_lock(&serialInterfaceMutex);
-        sprintf(str, " Total Capacity:             %0.1fAh", (float)sharedBMSTotalCapacity/10);
+        sprintf(str, " Total Capacity:             %dAh", (float)sharedBMSTotalCapacity);
         pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 7, 41, str);
 

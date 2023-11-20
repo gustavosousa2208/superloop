@@ -112,7 +112,7 @@ int getCommandLineArguments(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
     // createETHSocket();
     // printf("starting...");
-    serialSendReceive(NULL);
-    // mainFlow();
+    // serialSendReceive(NULL);
+    mainFlow();
     return 0;
 }

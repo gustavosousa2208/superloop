@@ -1,12 +1,5 @@
-CC_x86_64 = gcc
-CC_aarch64 = aarch64-linux-gnu-gcc
 
-ifeq ($(shell uname -p),x86_64)
-	CC = $(CC_x86_64)
-else
-	CC = $(CC_aarch64)
-endif
-
+CC = gcc
 CFLAGS = -g -Iinclude -w
 SRC_DIR = src
 OBJ_DIR = obj

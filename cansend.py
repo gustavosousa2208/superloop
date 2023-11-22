@@ -14,7 +14,7 @@ def sendMessages():
             os.system(f"cansend {interface} 034#3501")
             os.system(f"cansend {interface} 680#010F")
             os.system(f"cansend {interface} 685#0000")
-            time.sleep(0.100)
+            time.sleep(0.020)
         except KeyboardInterrupt:
             print("Exiting...")
             exit()

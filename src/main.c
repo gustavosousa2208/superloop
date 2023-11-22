@@ -1,10 +1,10 @@
 #include "funcs.h"
 
-const char *serial_interface = "/dev/ttyUSB0"; // ttyUSB0 esse ai e virtual
-const char *can_interface = "can0";
+const char *serial_interface = "/dev/tnt0"; // ttyUSB0 esse ai e virtual
+const char *can_interface = "vcan0";
 
 int sharedCounter = 0;
-volatile int interrupted;
+volatile int uiIsFinished = 0;
 
 uint16_t sharedCommandedSpeed;
 uint16_t sharedLogicalState;
@@ -21,7 +21,8 @@ uint16_t shareBMSTemperature;
 uint16_t sharedBMSRemainingCapacity;
 uint16_t sharedBMSTotalCapacity;
 
-pthread_mutex_t incomingDataMutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t inverterDataMutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t BMSDataMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t canInterfaceMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t serialInterfaceMutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -54,24 +55,24 @@ int mainFlow () {
         return 1;
     }
 
-    while(1) {
+    while(!uiIsFinished) {
         
     }
 
-    if (pthread_join(canThread, NULL) != 0) {
-        perror("pthread_join");
-        return 1;
-    }
-    if (pthread_join(BMSThread, NULL) != 0) {
-        perror("pthread_join");
-        return 1;
-    }
+    // if (pthread_join(canThread, NULL) != 0) {
+    //     perror("pthread_join");
+    //     return 1;
+    // }
+    // if (pthread_join(BMSThread, NULL) != 0) {
+    //     perror("pthread_join");
+    //     return 1;
+    // }
     if (pthread_join(uiThread, NULL) != 0) {
         perror("pthread_join");
         return 1;
     }
 
-    pthread_mutex_destroy(&incomingDataMutex);
+    pthread_mutex_destroy(&inverterDataMutex);
     pthread_mutex_destroy(&serialInterfaceMutex);
     pthread_mutex_destroy(&canInterfaceMutex);
 

@@ -9,3 +9,6 @@ rascunho pra comunicação can, rs485 e protocolos de segurança para controle d
 - [ ] Interface para enviar velocidade, comandos e ler velocidade
 - [ ] Ao invés de mandar a voltagem pra ui como float, melhor mandar como inteiro e colocar um ponto de mentira no ui?
  - [ ] No WSL a interface fica resposiva e com relativa folga na latência, só que seja na RPI ou OPI a interface fica menos responsiva, só que com menor latência 🤔
+
+ # Dúvidas
+ - [ ] Se o BMS já mostra corrente e tensão, é preciso coletar esses dados do inversor também?

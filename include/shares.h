@@ -26,6 +26,8 @@ extern uint16_t shareBMSTemperature;
 extern uint16_t sharedBMSRemainingCapacity;
 extern uint16_t sharedBMSTotalCapacity;
 
+extern double allInverterDataDeltaTime;
+
 extern const int desiredPort;
 
 extern const char *serial_interface;

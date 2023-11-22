@@ -26,6 +26,8 @@ pthread_mutex_t BMSDataMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t canInterfaceMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t serialInterfaceMutex = PTHREAD_MUTEX_INITIALIZER;
 
+double allInverterDataDeltaTime = {0, 0};
+
 const int desiredPort = 65000;
 
 int mainFlow () {
@@ -55,8 +57,8 @@ int mainFlow () {
         return 1;
     }
 
-    while(!uiIsFinished) {
-        
+    while(!uiIsFinished){
+
     }
 
     // if (pthread_join(canThread, NULL) != 0) {

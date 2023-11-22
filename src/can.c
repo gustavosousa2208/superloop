@@ -22,6 +22,9 @@ void *readInverterData(void * arg) {
     struct canReadThreadDataStruct *args = (struct canReadThreadDataStruct *)arg;
     int s = args->socket_descriptor;
 
+    int allReceived = 0;
+    struct timespec start, end;
+
     struct can_frame frame;
     while (1) {
         pthread_mutex_lock(&canInterfaceMutex);
@@ -33,45 +36,42 @@ void *readInverterData(void * arg) {
         }
 
         if (frame.can_id == 0x685) {
+            // while(pthread_mutex_trylock(&inverterDataMutex) != 0) {}
             pthread_mutex_lock(&inverterDataMutex);
             sharedCommandedSpeed = (frame.data[1] << 8) | (frame.data[0]);
             pthread_mutex_unlock(&inverterDataMutex);
+
+            allReceived |= 1;
         }
         if (frame.can_id == 0x680) {
-            pthread_mutex_lock(&inverterDataMutex);
+
             sharedLogicalState = (frame.data[1] << 8) | (frame.data[0]);
-            pthread_mutex_unlock(&inverterDataMutex);
+            allReceived |= 2;
         }
         if (frame.can_id == 0x07) {
-            pthread_mutex_lock(&inverterDataMutex);
             sharedMotorVoltage = (frame.data[1] << 8) | (frame.data[0]);
-            pthread_mutex_unlock(&inverterDataMutex);
+            allReceived |= 4;
         }
         if (frame.can_id == 0x04) {
-            pthread_mutex_lock(&inverterDataMutex);
             sharedInverterBatteryVoltage = (frame.data[1] << 8) | (frame.data[0]);
-            pthread_mutex_unlock(&inverterDataMutex);
+            allReceived |= 8;
         }
         if (frame.can_id == 0x03) {
-            pthread_mutex_lock(&inverterDataMutex);
             sharedMotorCurrent = (frame.data[1] << 8) | (frame.data[0]);
-            pthread_mutex_unlock(&inverterDataMutex);
+            allReceived |= 16;
         }
 
         if (frame.can_id == 0x30) {
-            pthread_mutex_lock(&inverterDataMutex);
             sharedInverterMosfetTemperature1 = (frame.data[1] << 8) | (frame.data[0]);
-            pthread_mutex_unlock(&inverterDataMutex);
+            allReceived |= 32;
         }
         if (frame.can_id == 0x33) {
-            pthread_mutex_lock(&inverterDataMutex);
             sharedInverterMosfetTemperature2 = (frame.data[1] << 8) | (frame.data[0]);
-            pthread_mutex_unlock(&inverterDataMutex);
+            allReceived |= 64;
         }
         if (frame.can_id == 0x33) {
-            pthread_mutex_lock(&inverterDataMutex);
             sharedInverterAirTemperature = (frame.data[1] << 8) | (frame.data[0]);
-            pthread_mutex_unlock(&inverterDataMutex);
+            allReceived |= 128;
         }
     }
     return NULL;

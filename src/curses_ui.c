@@ -1,6 +1,15 @@
 #include "funcs.h"
 #include "shares.h"
 
+uint16_t sharedCommandedSpeedTemp;
+uint16_t sharedLogicalStateTemp;
+uint16_t sharedInverterBatteryVoltageTemp;
+uint16_t sharedInverterMosfetTemperature1Temp;
+uint16_t sharedInverterMosfetTemperature2Temp;
+uint16_t sharedInverterAirTemperatureTemp;
+uint16_t sharedMotorCurrentTemp;
+uint16_t sharedMotorVoltageTemp;
+
 char *choices[] = {
     "Go Remote",
     "Choice 2",
@@ -150,19 +159,31 @@ void *windowLoop(void* arg) {
                 break;
         }
 
+        // while(pthread_mutex_trylock(&inverterDataMutex) != 0) {
+        //     pthread_mutex_unlock(&inverterDataMutex);
+        // }
         pthread_mutex_lock(&inverterDataMutex);
-        sprintf(str, " Battery Voltage (inverter): %0.1fV", (float)sharedInverterBatteryVoltage/10);
+        sharedCommandedSpeedTemp = sharedCommandedSpeed;
+        sharedLogicalStateTemp = sharedLogicalState;
+        sharedInverterBatteryVoltageTemp = sharedInverterBatteryVoltage;
+        sharedInverterMosfetTemperature1Temp = sharedInverterMosfetTemperature1;
+        sharedInverterMosfetTemperature2Temp = sharedInverterMosfetTemperature2;
+        sharedInverterAirTemperatureTemp = sharedInverterAirTemperature;
+        sharedMotorCurrentTemp = sharedMotorCurrent;
+        sharedMotorVoltageTemp = sharedMotorVoltage;
         pthread_mutex_unlock(&inverterDataMutex);
+
+        sprintf(str, " Battery Voltage (inverter): %0.1fV", (float)sharedInverterBatteryVoltageTemp/10);
         mvwprintw(win, 3, 1, str);
-        sprintf(str, " Motor Current:              %0.1fA", (float)sharedMotorCurrent/10);
+        sprintf(str, " Motor Current:              %0.1fA", (float)sharedMotorCurrentTemp/10);
         mvwprintw(win, 4, 1, str);
-        sprintf(str, " Motor Voltage:              %0.1fV", (float)sharedMotorVoltage/10);
+        sprintf(str, " Motor Voltage:              %0.1fV", (float)sharedMotorVoltageTemp/10);
         mvwprintw(win, 5, 1, str);
-        sprintf(str, " Mosfet 1 Temperature:       %0.1fC", (float)sharedInverterMosfetTemperature2/10);
+        sprintf(str, " Mosfet 1 Temperature:       %0.1fC", (float)sharedInverterMosfetTemperature2Temp/10);
         mvwprintw(win, 6, 1, str);
-        sprintf(str, " Mosfet 2 Temperature:       %0.1fC", (float)sharedInverterMosfetTemperature1/10);
+        sprintf(str, " Mosfet 2 Temperature:       %0.1fC", (float)sharedInverterMosfetTemperature1Temp/10);
         mvwprintw(win, 7, 1, str);
-        sprintf(str, " Internal Air Temperature    %0.1fC", (float)sharedInverterMosfetTemperature1/10);
+        sprintf(str, " Internal Air Temperature    %0.1fC", (float)sharedInverterMosfetTemperature1Temp/10);
         mvwprintw(win, 8, 1, str);
 
         pthread_mutex_lock(&serialInterfaceMutex);

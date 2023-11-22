@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../inverter_messages"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"features.h": "c",
+			"termios.h": "c",
+			"can.h": "c",
+			"stdio.h": "c"
+		}
+	}
+}

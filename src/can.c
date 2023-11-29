@@ -1,6 +1,8 @@
 #include "funcs.h"
 #include "shares.h"
 
+struct can_frame thisFrame;
+
 void *sendInverterData(void * arg) {
     struct canSendThreadDataStruct *args = (struct canSendThreadDataStruct *)arg;
     int s = args->socket_descriptor;
@@ -25,54 +27,47 @@ void *readInverterData(void * arg) {
     int allReceived = 0;
     struct timespec start, end;
 
-    struct can_frame frame;
     while (1) {
         pthread_mutex_lock(&canInterfaceMutex);
-        ssize_t nbytes = read(s, &frame, sizeof(struct can_frame));
+        ssize_t nbytes = read(s, &thisFrame, sizeof(struct can_frame));
         pthread_mutex_unlock(&canInterfaceMutex);
+
         if (nbytes < 0) {
             perror("read");
             break;
         }
 
-        if (frame.can_id == 0x685) {
-            // while(pthread_mutex_trylock(&inverterDataMutex) != 0) {}
-            pthread_mutex_lock(&inverterDataMutex);
-            sharedCommandedSpeed = (frame.data[1] << 8) | (frame.data[0]);
-            pthread_mutex_unlock(&inverterDataMutex);
+        pthread_mutex_lock(&inverterDataMutex);
+        switch(thisFrame.can_id){
+            case 0x685:
+                sharedCommandedSpeed = (thisFrame.data[1] << 8) | (thisFrame.data[0]);
+                break;
+            case 0x680:
+                sharedLogicalState = (thisFrame.data[1] << 8) | (thisFrame.data[0]);
+                break;
+            case 0x07:
+                sharedMotorVoltage = (thisFrame.data[1] << 8) | (thisFrame.data[0]);
+            case 0x04:
+                sharedInverterBatteryVoltage = (thisFrame.data[1] << 8) | (thisFrame.data[0]);
+                break;
+            case 0x03:
+                sharedMotorCurrent = (thisFrame.data[1] << 8) | (thisFrame.data[0]);
+                break;
+            case 0x30:
+                sharedInverterMosfetTemperature1 = (thisFrame.data[1] << 8) | (thisFrame.data[0]);
+                break;
+            case 0x33:
+                sharedInverterMosfetTemperature2 = (thisFrame.data[1] << 8) | (thisFrame.data[0]);
+                break;
+            case 0x34:
+                sharedInverterAirTemperature = (thisFrame.data[1] << 8) | (thisFrame.data[0]);
+                break;
+            default:
+                break;
+        }
+        pthread_mutex_unlock(&inverterDataMutex);
 
-            allReceived |= 1;
-        }
-        if (frame.can_id == 0x680) {
-
-            sharedLogicalState = (frame.data[1] << 8) | (frame.data[0]);
-            allReceived |= 2;
-        }
-        if (frame.can_id == 0x07) {
-            sharedMotorVoltage = (frame.data[1] << 8) | (frame.data[0]);
-            allReceived |= 4;
-        }
-        if (frame.can_id == 0x04) {
-            sharedInverterBatteryVoltage = (frame.data[1] << 8) | (frame.data[0]);
-            allReceived |= 8;
-        }
-        if (frame.can_id == 0x03) {
-            sharedMotorCurrent = (frame.data[1] << 8) | (frame.data[0]);
-            allReceived |= 16;
-        }
-
-        if (frame.can_id == 0x30) {
-            sharedInverterMosfetTemperature1 = (frame.data[1] << 8) | (frame.data[0]);
-            allReceived |= 32;
-        }
-        if (frame.can_id == 0x33) {
-            sharedInverterMosfetTemperature2 = (frame.data[1] << 8) | (frame.data[0]);
-            allReceived |= 64;
-        }
-        if (frame.can_id == 0x33) {
-            sharedInverterAirTemperature = (frame.data[1] << 8) | (frame.data[0]);
-            allReceived |= 128;
-        }
+        clock_gettime(CLOCK_MONOTONIC, &lastTelegram);
     }
     return NULL;
 }

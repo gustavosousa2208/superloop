@@ -137,13 +137,20 @@ void *windowLoop(void* arg) {
     set_menu_back(my_menu, COLOR_PAIR(1));
     wrefresh(win);                                                      
     int index;
-    double oldTime, meanTime, maxTime = 0;
+    double oldTime, meanTime, maxTime, lastReceivedTime, lastLastReceivedTime, lat = 0;
     char ok;
     char str[100];
     
     while (1) {
+
+        lastReceivedTime = (double) ((double)lastTelegram.tv_sec + (double)lastTelegram.tv_nsec / 10e6);
+        if (lastReceivedTime > lastLastReceivedTime) {
+            lat = lastReceivedTime - lastLastReceivedTime;
+            lastLastReceivedTime = lastReceivedTime;
+        }
+
         clock_gettime(CLOCK_MONOTONIC, &start);
-        sprintf(str, "Latency: %e", oldTime);
+        sprintf(str, "Latency (lat): %e", lat);
         mvwprintw(win, row - 4, 1, str);
 
         sprintf(str, "Max. Latency: %e", maxTime);
@@ -158,10 +165,6 @@ void *windowLoop(void* arg) {
                 menu_driver(my_menu, REQ_UP_ITEM);
                 break;
         }
-
-        // while(pthread_mutex_trylock(&inverterDataMutex) != 0) {
-        //     pthread_mutex_unlock(&inverterDataMutex);
-        // }
         pthread_mutex_lock(&inverterDataMutex);
         sharedCommandedSpeedTemp = sharedCommandedSpeed;
         sharedLogicalStateTemp = sharedLogicalState;
@@ -236,13 +239,6 @@ void *windowLoop(void* arg) {
         if(c == 10) {
             mvwprintw(win, 0, 30, "Item selected is : %s", item_name(current_item(my_menu)));
             break;
-        }
-        clock_gettime(CLOCK_MONOTONIC, &end);
-        elapsed_time = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
-        meanTime = (meanTime + elapsed_time) / 2;
-        oldTime = elapsed_time;
-        if(meanTime > maxTime) {
-            maxTime = meanTime;
         }
         wrefresh(win);
     }

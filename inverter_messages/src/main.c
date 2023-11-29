@@ -107,6 +107,6 @@ int main () {
         bytes_sent = send(s, &temp2, sizeof(temp2), 0);
         bytes_sent = send(s, &inverterAir, sizeof(inverterAir), 0);
         
-        usleep(20/1000);
+        usleep(20*1000);
     }
 }

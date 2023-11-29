@@ -30,6 +30,9 @@ double allInverterDataDeltaTime = {0, 0};
 
 const int desiredPort = 65000;
 
+struct timespec lastTelegram;
+
+
 int mainFlow () {
     int sock = createCANSocket(can_interface);
     
@@ -38,7 +41,7 @@ int mainFlow () {
         return 1;
     }
 
-    pthread_t canThread, uiThread, BMSThread;
+    pthread_t canThread, uiThread, BMSThread, logInverterThread;
     struct canReadThreadDataStruct canThreadData;
     canThreadData.socket_descriptor = sock;
 
@@ -57,18 +60,15 @@ int mainFlow () {
         return 1;
     }
 
+    if(pthread_create(&logInverterThread, NULL, logInverter, NULL)){
+        perror("inverter log create");
+        return 1;
+    }
+
     while(!uiIsFinished){
 
     }
 
-    // if (pthread_join(canThread, NULL) != 0) {
-    //     perror("pthread_join");
-    //     return 1;
-    // }
-    // if (pthread_join(BMSThread, NULL) != 0) {
-    //     perror("pthread_join");
-    //     return 1;
-    // }
     if (pthread_join(uiThread, NULL) != 0) {
         perror("pthread_join");
         return 1;

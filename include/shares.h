@@ -34,4 +34,7 @@ extern const char *serial_interface;
 
 extern volatile int uiIsFinished;
 
+extern struct timespec lastTelegram;
+extern struct can_frame thisFrame;
+
 #endif // SHARES_H

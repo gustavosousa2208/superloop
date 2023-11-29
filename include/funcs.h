@@ -58,5 +58,6 @@ uint16_t telegramReceive2(int s);
 void *windowLoop(void* arg);
 int createCANSocket(const char* interface_name);
 void sigintHandler(int sig_num);
+void *logInverter (void* arg);
 
 #endif

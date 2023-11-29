@@ -1,6 +1,6 @@
 
 CC = gcc
-CFLAGS = -g -Iinclude -w
+CFLAGS = -pg -Iinclude -w
 SRC_DIR = src
 OBJ_DIR = obj
 BIN_DIR = bin
@@ -19,7 +19,7 @@ all: clean $(TARGET) run
 
 $(TARGET): $(OBJ_FILES)
 	@mkdir -p $(BIN_DIR) 
-	$(CC) -g $^ -o $@ $(PFLAGS)
+	$(CC) -pg $^ -o $@ $(PFLAGS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(OBJ_DIR)

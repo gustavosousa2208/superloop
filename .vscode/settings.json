@@ -7,5 +7,12 @@
         "features.h": "c",
         "termios.h": "c",
         "can.h": "c"
-    }
+    },
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/gusta/superloop/bin",
+            "binaryPath": "/home/gusta/superloop/bin/superloop",
+            "binaryArgs": []
+        }
+    ]
 }

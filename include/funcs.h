@@ -50,6 +50,28 @@ struct canSendThreadDataStruct {
     struct can_frame frame;
 };
 
+struct allData {
+    uint16_t sharedMotorCurrent;
+    uint16_t sharedInverterBatteryVoltage;
+    uint16_t sharedMotorVoltage;
+    uint16_t sharedInverterAirTemperature;
+    
+    uint16_t sharedInverterMosfetTemperature1;
+    uint16_t sharedInverterMosfetTemperature2;
+    uint16_t sharedLogicalState;
+    uint16_t sharedCommandedSpeed;
+
+    uint16_t sharedBMSVoltage;
+    uint16_t sharedBMSCurrent;
+    uint16_t sharedBMSTemperature;
+    uint16_t sharedBMSRemainingCapacity;
+    
+    uint16_t sharedBMSTotalCapacity;
+    uint16_t extra1;
+    uint16_t extra2;
+    uint16_t extra3;
+};
+
 void *sendInverterData(void * arg);
 void *serialSendReceive (void* arg);
 int sendTelegram(int s, struct can_frame *frame);
@@ -59,5 +81,7 @@ void *windowLoop(void* arg);
 int createCANSocket(const char* interface_name);
 void sigintHandler(int sig_num);
 void *logInverter (void* arg);
+
+void * server (void* arg);
 
 #endif

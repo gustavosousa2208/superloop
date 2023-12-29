@@ -53,10 +53,10 @@ void *serialSendReceive (void* arg) {
             return 1;
         } else {
             pthread_mutex_lock(&BMSDataMutex);
-            sharedBMSVoltage = (buffer[4] << 8) | (buffer[5]);
-            sharedBMSCurrent = (buffer[6] << 8) | (buffer[7]);
-            sharedBMSRemainingCapacity = (buffer[8] << 8) | (buffer[9]);
-            sharedBMSTotalCapacity = (buffer[10] << 8) | (buffer[11]);
+            all_data.sharedBMSVoltage = (buffer[4] << 8) | (buffer[5]);
+            all_data.sharedBMSCurrent = (buffer[6] << 8) | (buffer[7]);
+            all_data.sharedBMSRemainingCapacity = (buffer[8] << 8) | (buffer[9]);
+            all_data.sharedBMSTotalCapacity = (buffer[10] << 8) | (buffer[11]);
             pthread_mutex_unlock(&BMSDataMutex);
         }
         write(serial_port, dummy, 1);

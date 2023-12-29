@@ -1,14 +1,7 @@
 #include "funcs.h"
 #include "shares.h"
 
-uint16_t sharedCommandedSpeedTemp;
-uint16_t sharedLogicalStateTemp;
-uint16_t sharedInverterBatteryVoltageTemp;
-uint16_t sharedInverterMosfetTemperature1Temp;
-uint16_t sharedInverterMosfetTemperature2Temp;
-uint16_t sharedInverterAirTemperatureTemp;
-uint16_t sharedMotorCurrentTemp;
-uint16_t sharedMotorVoltageTemp;
+struct allData all_data_temp;
 
 char *choices[] = {
     "Go Remote",
@@ -166,73 +159,66 @@ void *windowLoop(void* arg) {
                 break;
         }
         pthread_mutex_lock(&inverterDataMutex);
-        sharedCommandedSpeedTemp = sharedCommandedSpeed;
-        sharedLogicalStateTemp = sharedLogicalState;
-        sharedInverterBatteryVoltageTemp = sharedInverterBatteryVoltage;
-        sharedInverterMosfetTemperature1Temp = sharedInverterMosfetTemperature1;
-        sharedInverterMosfetTemperature2Temp = sharedInverterMosfetTemperature2;
-        sharedInverterAirTemperatureTemp = sharedInverterAirTemperature;
-        sharedMotorCurrentTemp = sharedMotorCurrent;
-        sharedMotorVoltageTemp = sharedMotorVoltage;
+        all_data_temp = all_data;
         pthread_mutex_unlock(&inverterDataMutex);
 
-        sprintf(str, " Battery Voltage (inverter): %0.1fV", (float)sharedInverterBatteryVoltageTemp/10);
+        sprintf(str, " Battery Voltage (inverter): %0.1fV", (float) all_data_temp.sharedInverterBatteryVoltage/10);
         mvwprintw(win, 3, 1, str);
-        sprintf(str, " Motor Current:              %0.1fA", (float)sharedMotorCurrentTemp/10);
+        sprintf(str, " Motor Current:              %0.1fA", (float) all_data_temp.sharedMotorCurrent/10);
         mvwprintw(win, 4, 1, str);
-        sprintf(str, " Motor Voltage:              %0.1fV", (float)sharedMotorVoltageTemp/10);
+        sprintf(str, " Motor Voltage:              %0.1fV", (float) all_data_temp.sharedMotorVoltage/10);
         mvwprintw(win, 5, 1, str);
-        sprintf(str, " Mosfet 1 Temperature:       %0.1fC", (float)sharedInverterMosfetTemperature2Temp/10);
+        sprintf(str, " Mosfet 1 Temperature:       %0.1fC", (float) all_data_temp.sharedInverterMosfetTemperature2/10);
         mvwprintw(win, 6, 1, str);
-        sprintf(str, " Mosfet 2 Temperature:       %0.1fC", (float)sharedInverterMosfetTemperature1Temp/10);
+        sprintf(str, " Mosfet 2 Temperature:       %0.1fC", (float) all_data_temp.sharedInverterMosfetTemperature1/10);
         mvwprintw(win, 7, 1, str);
-        sprintf(str, " Internal Air Temperature    %0.1fC", (float)sharedInverterMosfetTemperature1Temp/10);
+        sprintf(str, " Internal Air Temperature    %0.1fC", (float) all_data_temp.sharedInverterMosfetTemperature1/10);
         mvwprintw(win, 8, 1, str);
 
         pthread_mutex_lock(&serialInterfaceMutex);
-        sprintf(str, " Battery Voltage (BMS):      %0.1fV", (float)sharedBMSVoltage/100);
+        sprintf(str, " Battery Voltage (BMS):      %0.1fV", (float) all_data_temp.sharedBMSVoltage/100);
         pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 3, 41, str);
 
         pthread_mutex_lock(&serialInterfaceMutex);
-        sprintf(str, " Battery Current:            %0.1fA", (float)sharedBMSCurrent/100);
+        sprintf(str, " Battery Current:            %0.1fA", (float) all_data_temp.sharedBMSCurrent/100);
         pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 4, 41, str);
         
         pthread_mutex_lock(&serialInterfaceMutex);
-        sprintf(str, " Battery Temperature:        %0.1fC", (float)shareBMSTemperature/100);
+        sprintf(str, " Battery Temperature:        %0.1fC", (float)all_data_temp.sharedBMSTemperature/100);
         pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 5, 41, str);
         
         pthread_mutex_lock(&serialInterfaceMutex);
-        sprintf(str, " Remaining Capacity:         %0dAh", (float)sharedBMSRemainingCapacity);
+        sprintf(str, " Remaining Capacity:         %0dAh", (float) all_data_temp.sharedBMSRemainingCapacity);
         pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 6, 41, str);
         
         pthread_mutex_lock(&serialInterfaceMutex);
-        sprintf(str, " Total Capacity:             %dAh", (float)sharedBMSTotalCapacity);
+        sprintf(str, " Total Capacity:             %dAh", (float) all_data_temp.sharedBMSTotalCapacity);
         pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 7, 41, str);
 
-        ok = (sharedLogicalState & 8) > 0 ? '*' : ' ';
+        ok = (all_data_temp.sharedLogicalState & 8) > 0 ? '*' : ' ';
         sprintf(str, "[%c] Runnning: ", ok);
         mvwprintw(win, 12, 2, str);
-        ok = (sharedLogicalState & 9) > 0 ? '*' : ' ';
+        ok = (all_data_temp.sharedLogicalState & 9) > 0 ? '*' : ' ';
         sprintf(str, "[%c] Enabled: ", ok);
         mvwprintw(win, 13, 2, str);
-        ok = (sharedLogicalState & 10) > 0 ? '*' : ' ';
+        ok = (all_data_temp.sharedLogicalState & 10) > 0 ? '*' : ' ';
         sprintf(str, "[%c] Clockwise: ", ok);
         mvwprintw(win, 14, 2, str);
-        ok = (sharedLogicalState & 11) > 0 ? '*' : ' ';
+        ok = (all_data_temp.sharedLogicalState & 11) > 0 ? '*' : ' ';
         sprintf(str, "[%c] JOG: ", ok);
         mvwprintw(win, 15, 2, str);
-        ok = (sharedLogicalState & 12) > 0 ? '*' : ' ';
+        ok = (all_data_temp.sharedLogicalState & 12) > 0 ? '*' : ' ';
         sprintf(str, "[%c] Remote: ", ok);
         mvwprintw(win, 16, 2, str);
-        ok = (sharedLogicalState & 13) > 0 ? '*' : ' ';
+        ok = (all_data_temp.sharedLogicalState & 13) > 0 ? '*' : ' ';
         sprintf(str, "[%c] SUB: ", ok);
         mvwprintw(win, 17, 2, str);
-        ok = (sharedLogicalState & 15) > 0 ? '*' : ' ';
+        ok = (all_data_temp.sharedLogicalState & 15) > 0 ? '*' : ' ';
         sprintf(str, "[%c] FAULT: ", ok);
         
 

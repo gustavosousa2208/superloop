@@ -6,20 +6,7 @@ const char *can_interface = "vcan0";
 int sharedCounter = 0;
 volatile int uiIsFinished = 0;
 
-uint16_t sharedCommandedSpeed;
-uint16_t sharedLogicalState;
-uint16_t sharedInverterBatteryVoltage;
-uint16_t sharedInverterMosfetTemperature1;
-uint16_t sharedInverterMosfetTemperature2;
-uint16_t sharedInverterAirTemperature;
-uint16_t sharedMotorCurrent;
-uint16_t sharedMotorVoltage;
-
-uint16_t sharedBMSVoltage;
-uint16_t sharedBMSCurrent;
-uint16_t shareBMSTemperature;
-uint16_t sharedBMSRemainingCapacity;
-uint16_t sharedBMSTotalCapacity;
+struct allData all_data;
 
 pthread_mutex_t inverterDataMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t BMSDataMutex = PTHREAD_MUTEX_INITIALIZER;
@@ -41,27 +28,32 @@ int mainFlow () {
         return 1;
     }
 
-    pthread_t canThread, uiThread, BMSThread, logInverterThread;
+    pthread_t canThread, uiThread, BMSThread, logInverterThread, serverThread;
     struct canReadThreadDataStruct canThreadData;
     canThreadData.socket_descriptor = sock;
 
     if(pthread_create(&canThread, NULL, readInverterData, &canThreadData)){
-        perror("can thread create");
+        perror("ERROR: can thread create");
         return 1;
     }
 
     if(pthread_create(&BMSThread, NULL, serialSendReceive, NULL)){
-        perror("BMS thread create");
+        perror("ERROR: BMS thread create");
         return 1;
     }
 
     if(pthread_create(&uiThread, NULL, windowLoop, NULL)){
-        perror("ui thread create");
+        perror("ERROR: ui thread create");
         return 1;
     }
 
+    // if(pthread_create(&serverThread, NULL, server, NULL)){
+    //     perror("ERROR: server thread create");
+    //     return 1;
+    // }
+
     if(pthread_create(&logInverterThread, NULL, logInverter, NULL)){
-        perror("inverter log create");
+        perror("ERROR: inverter log create");
         return 1;
     }
 

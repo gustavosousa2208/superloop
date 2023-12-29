@@ -6,25 +6,12 @@ extern const char *can_interface;
 extern pthread_mutex_t canInterfaceMutex;
 extern pthread_mutex_t inverterDataMutex;
 
-extern uint16_t sharedCommandedSpeed;
-extern uint16_t sharedLogicalState;
-extern uint16_t sharedInverterBatteryVoltage;
-extern uint16_t sharedInverterMosfetTemperature1;
-extern uint16_t sharedInverterMosfetTemperature2;
-extern uint16_t sharedInverterAirTemperature;
-extern uint16_t sharedMotorCurrent;
-extern uint16_t sharedMotorVoltage;
+extern struct allData all_data;
 
 extern int sharedCounter;
 
 extern pthread_mutex_t serialInterfaceMutex;
 extern pthread_mutex_t BMSDataMutex;
-
-extern uint16_t sharedBMSVoltage;
-extern uint16_t sharedBMSCurrent;
-extern uint16_t shareBMSTemperature;
-extern uint16_t sharedBMSRemainingCapacity;
-extern uint16_t sharedBMSTotalCapacity;
 
 extern double allInverterDataDeltaTime;
 

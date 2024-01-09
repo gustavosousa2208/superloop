@@ -6,6 +6,8 @@ OBJ_DIR = obj
 BIN_DIR = bin
 PFLAGS = -lncurses -ltinfo -lmenu -pthread -levdev -std=gnu99
 
+CONFIG ?= debug
+
 # List of source files (excluding .c extension)
 SRC_FILES = $(notdir $(basename $(wildcard $(SRC_DIR)/*.c)))
 
@@ -16,6 +18,11 @@ OBJ_FILES = $(addprefix $(OBJ_DIR)/, $(addsuffix .o, $(SRC_FILES)))
 TARGET = $(BIN_DIR)/superloop
 
 all: clean $(TARGET) run
+
+# Configuration selection
+ifeq ($(CONFIG), debug)
+    CFLAGS += -DDEBUG
+endif
 
 $(TARGET): $(OBJ_FILES)
 	@mkdir -p $(BIN_DIR) 

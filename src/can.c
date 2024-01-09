@@ -73,7 +73,7 @@ void *readInverterData(void * arg) {
     return NULL;
 }
 
-void* readInverterDataWithTimestamp(void* arg) {
+// void* readInverterDataWithTimestamp(void* arg) {
     
 
 uint16_t telegramReceive2(int s) {

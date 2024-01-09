@@ -1,7 +1,7 @@
+#include "config.h"
 #include "funcs.h"
 
 const char *serial_interface = "/dev/tnt0"; // ttyUSB0 esse ai e virtual
-const char *can_interface = "vcan0";
 
 int sharedCounter = 0;
 volatile int uiIsFinished = 0;
@@ -22,7 +22,7 @@ struct timespec lastTelegram;
 void *serialSendReceive (void* arg);
 
 int mainFlow () {
-    int sock = createCANSocket(can_interface);
+    int sock = createCANSocket(CAN_INTERFACE);
     
     if (sock == -1) {
         printf("Failed to create the CAN socket.\n");
@@ -109,7 +109,14 @@ int main(int argc, char *argv[]) {
     // createETHSocket();
     // printf("starting...");
     // serialSendReceive(NULL);
-    mainFlow();
+
+    #ifdef DEBUG
+        printf("we debug!");
+    #else
+        printf("we dont");
+    #endif
+
+    // mainFlow();
     // pthread_t controllerThread;
     // if(pthread_create(&controllerThread, NULL, readDS4, NULL)){
     //     perror("ERROR: controller thread create");

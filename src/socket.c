@@ -50,6 +50,8 @@ void * server(void * arg) {
     data[1] = 'S';
 
     while (1) {
+        // se tu não tiver exception handling aqui na hora do client fechar a conexão
+        // da broken pipe
         usleep(100);
         pthread_mutex_lock(&inverterDataMutex);
         memcpy(&data[2], &all_data, 32);

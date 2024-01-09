@@ -15,10 +15,11 @@ pthread_mutex_t serialInterfaceMutex = PTHREAD_MUTEX_INITIALIZER;
 
 double allInverterDataDeltaTime = {0, 0};
 
-const int desiredPort = 65000;
+const int desiredPort = 12345;
 
 struct timespec lastTelegram;
 
+void *serialSendReceive (void* arg);
 
 int mainFlow () {
     int sock = createCANSocket(can_interface);
@@ -42,15 +43,15 @@ int mainFlow () {
         return 1;
     }
 
-    if(pthread_create(&uiThread, NULL, windowLoop, NULL)){
-        perror("ERROR: ui thread create");
-        return 1;
-    }
-
-    // if(pthread_create(&serverThread, NULL, server, NULL)){
-    //     perror("ERROR: server thread create");
+    // if(pthread_create(&uiThread, NULL, windowLoop, NULL)){
+    //     perror("ERROR: ui thread create");
     //     return 1;
     // }
+
+    if(pthread_create(&serverThread, NULL, server, NULL)){
+        perror("ERROR: server thread create");
+        return 1;
+    }
 
     if(pthread_create(&logInverterThread, NULL, logInverter, NULL)){
         perror("ERROR: inverter log create");
@@ -109,5 +110,13 @@ int main(int argc, char *argv[]) {
     // printf("starting...");
     // serialSendReceive(NULL);
     mainFlow();
+    // pthread_t controllerThread;
+    // if(pthread_create(&controllerThread, NULL, readDS4, NULL)){
+    //     perror("ERROR: controller thread create");
+    //     return 1;
+    // } else {
+    //     printf("controller thread created\n");
+    // }
+    // pthread_join(controllerThread, NULL);
     return 0;
 }

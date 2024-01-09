@@ -5,7 +5,7 @@
             "name": "Debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/superloop", // Replace with your executable name
+            "program": "${workspaceFolder}/bin/superloop",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -19,9 +19,7 @@
                     "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "build",
-            "miDebuggerPath": "", // Replace with your debugger path
+            "preLaunchTask": "build"
         }
-
     ]
 }

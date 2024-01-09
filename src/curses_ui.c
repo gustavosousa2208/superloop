@@ -191,12 +191,12 @@ void *windowLoop(void* arg) {
         mvwprintw(win, 5, 41, str);
         
         pthread_mutex_lock(&serialInterfaceMutex);
-        sprintf(str, " Remaining Capacity:         %0dAh", (float) all_data_temp.sharedBMSRemainingCapacity);
+        sprintf(str, " Remaining Capacity:         %0dAh", all_data_temp.sharedBMSRemainingCapacity);
         pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 6, 41, str);
         
         pthread_mutex_lock(&serialInterfaceMutex);
-        sprintf(str, " Total Capacity:             %dAh", (float) all_data_temp.sharedBMSTotalCapacity);
+        sprintf(str, " Total Capacity:             %dAh", all_data_temp.sharedBMSTotalCapacity);
         pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 7, 41, str);
 

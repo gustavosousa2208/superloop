@@ -1,6 +1,7 @@
 #include "funcs.h"
 #include "shares.h"
 
+
 void *serialSendReceive (void* arg) {
     int serial_port = open(serial_interface, O_RDWR | O_NOCTTY);
     if (serial_port < 0) {

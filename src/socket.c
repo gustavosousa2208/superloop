@@ -52,7 +52,7 @@ void * server(void * arg) {
     while (1) {
         usleep(100);
         pthread_mutex_lock(&inverterDataMutex);
-        memcpy(&data[2], &all_data, 32);                   // 03
+        memcpy(&data[2], &all_data, 32);
         pthread_mutex_unlock(&inverterDataMutex);
         send (new_socket, data, 34, 0);
     }

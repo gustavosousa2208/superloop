@@ -1,10 +1,10 @@
 
 CC = gcc
-CFLAGS = -pg -Iinclude -w
+CFLAGS = -g -Iinclude -I/usr/include/libevdev-1.0/ -w
 SRC_DIR = src
 OBJ_DIR = obj
 BIN_DIR = bin
-PFLAGS = -lncurses -ltinfo -lmenu -pthread -std=gnu99
+PFLAGS = -lncurses -ltinfo -lmenu -pthread -levdev -std=gnu99
 
 # List of source files (excluding .c extension)
 SRC_FILES = $(notdir $(basename $(wildcard $(SRC_DIR)/*.c)))
@@ -19,7 +19,7 @@ all: clean $(TARGET) run
 
 $(TARGET): $(OBJ_FILES)
 	@mkdir -p $(BIN_DIR) 
-	$(CC) -pg $^ -o $@ $(PFLAGS)
+	$(CC) -g $^ -o $@ $(PFLAGS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(OBJ_DIR)
@@ -28,7 +28,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 compile: clean $(TARGET)
 
 run:
-	./bin/superloop
+	sudo ./bin/superloop
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
 

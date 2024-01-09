@@ -1,18 +1,14 @@
 {
-    "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
-    },
-    "python.formatting.provider": "none",
-    "files.associations": {
-        "features.h": "c",
-        "termios.h": "c",
-        "can.h": "c"
-    },
     "makefile.launchConfigurations": [
         {
             "cwd": "/home/gusta/superloop/bin",
             "binaryPath": "/home/gusta/superloop/bin/superloop",
             "binaryArgs": []
         }
-    ]
+    ],
+    "files.associations": {
+        "includes.h": "c",
+        "shares.h": "c",
+        "ncurses.h": "c"
+    }
 }

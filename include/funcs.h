@@ -26,6 +26,9 @@
 #include <netinet/in.h>
 #include <net/if.h>
 #include <arpa/inet.h>
+#include <libevdev/libevdev.h>
+#include <libevdev/libevdev-uinput.h>
+
 
 #define CAN_RECV_TIMEOUT_USECONDS 200000
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
@@ -73,7 +76,6 @@ struct allData {
 };
 
 void *sendInverterData(void * arg);
-void *serialSendReceive (void* arg);
 int sendTelegram(int s, struct can_frame *frame);
 void *readInverterData(void * arg);
 uint16_t telegramReceive2(int s);
@@ -81,7 +83,7 @@ void *windowLoop(void* arg);
 int createCANSocket(const char* interface_name);
 void sigintHandler(int sig_num);
 void *logInverter (void* arg);
-
 void * server (void* arg);
+void * readDS4(void *arg );
 
 #endif

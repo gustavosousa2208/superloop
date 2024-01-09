@@ -114,13 +114,13 @@ int main(int argc, char *argv[]) {
 
     mainFlow();
 
-    // pthread_t controllerThread;
-    // if(pthread_create(&controllerThread, NULL, readDS4, NULL)){
+    // pthread_t smoeThread;
+    // if(pthread_create(&smoeThread, NULL, readInverterData, (int *) sock)){
     //     perror("ERROR: controller thread create");
     //     return 1;
     // } else {
     //     printf("controller thread created\n");
     // }
-    // pthread_join(controllerThread, NULL);
+    // pthread_join(smoeThread, NULL);
     return 0;
 }

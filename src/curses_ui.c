@@ -111,17 +111,17 @@ void *windowLoop(void* arg) {
         all_data_temp = all_data;
         pthread_mutex_unlock(&inverterDataMutex);
 
-        sprintf(str, " Battery Voltage (inverter): %0.1fV", (float) all_data_temp.sharedInverterBatteryVoltage/10);
+        sprintf(str, " Battery Voltage (inverter): %0.1fV", (float) all_data_temp.inverterBatteryVoltage/10);
         mvwprintw(win, 3, 1, str);
-        sprintf(str, " Motor Current:              %0.1fA", (float) all_data_temp.sharedMotorCurrent/10);
+        sprintf(str, " Motor Current:              %0.1fA", (float) all_data_temp.motorCurrent/10);
         mvwprintw(win, 4, 1, str);
-        sprintf(str, " Motor Voltage:              %0.1fV", (float) all_data_temp.sharedMotorVoltage/10);
+        sprintf(str, " Motor Voltage:              %0.1fV", (float) all_data_temp.motorVoltage/10);
         mvwprintw(win, 5, 1, str);
-        sprintf(str, " Mosfet 1 Temperature:       %0.1fC", (float) all_data_temp.sharedInverterMosfetTemperature2/10);
+        sprintf(str, " Mosfet 1 Temperature:       %0.1fC", (float) all_data_temp.inverterMosfetTemperature2/10);
         mvwprintw(win, 6, 1, str);
-        sprintf(str, " Mosfet 2 Temperature:       %0.1fC", (float) all_data_temp.sharedInverterMosfetTemperature1/10);
+        sprintf(str, " Mosfet 2 Temperature:       %0.1fC", (float) all_data_temp.inverterMosfetTemperature1/10);
         mvwprintw(win, 7, 1, str);
-        sprintf(str, " Internal Air Temperature    %0.1fC", (float) all_data_temp.sharedInverterMosfetTemperature1/10);
+        sprintf(str, " Internal Air Temperature    %0.1fC", (float) all_data_temp.inverterMosfetTemperature1/10);
         mvwprintw(win, 8, 1, str);
 
         pthread_mutex_lock(&serialInterfaceMutex);
@@ -149,25 +149,25 @@ void *windowLoop(void* arg) {
         pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 7, 41, str);
 
-        ok = (all_data_temp.sharedLogicalState & 8) > 0 ? '*' : ' ';
+        ok = (all_data_temp.logicalState & 8) > 0 ? '*' : ' ';
         sprintf(str, "[%c] Runnning: ", ok);
         mvwprintw(win, 12, 2, str);
-        ok = (all_data_temp.sharedLogicalState & 9) > 0 ? '*' : ' ';
+        ok = (all_data_temp.logicalState & 9) > 0 ? '*' : ' ';
         sprintf(str, "[%c] Enabled: ", ok);
         mvwprintw(win, 13, 2, str);
-        ok = (all_data_temp.sharedLogicalState & 10) > 0 ? '*' : ' ';
+        ok = (all_data_temp.logicalState & 10) > 0 ? '*' : ' ';
         sprintf(str, "[%c] Clockwise: ", ok);
         mvwprintw(win, 14, 2, str);
-        ok = (all_data_temp.sharedLogicalState & 11) > 0 ? '*' : ' ';
+        ok = (all_data_temp.logicalState & 11) > 0 ? '*' : ' ';
         sprintf(str, "[%c] JOG: ", ok);
         mvwprintw(win, 15, 2, str);
-        ok = (all_data_temp.sharedLogicalState & 12) > 0 ? '*' : ' ';
+        ok = (all_data_temp.logicalState & 12) > 0 ? '*' : ' ';
         sprintf(str, "[%c] Remote: ", ok);
         mvwprintw(win, 16, 2, str);
-        ok = (all_data_temp.sharedLogicalState & 13) > 0 ? '*' : ' ';
+        ok = (all_data_temp.logicalState & 13) > 0 ? '*' : ' ';
         sprintf(str, "[%c] SUB: ", ok);
         mvwprintw(win, 17, 2, str);
-        ok = (all_data_temp.sharedLogicalState & 15) > 0 ? '*' : ' ';
+        ok = (all_data_temp.logicalState & 15) > 0 ? '*' : ' ';
         sprintf(str, "[%c] FAULT: ", ok);
         
 

@@ -1,14 +1,16 @@
 #include "funcs.h"
 #include "shares.h"
 
+// no raspberry é event2 e na orange é event8
+
 void * readDS4(void *arg ) {
-    const char *device_path = "/dev/input/event2";
+    const char *device_path = "/dev/input/event8";
     int fd = open(device_path, O_RDONLY | O_NONBLOCK);
 
     if (fd < 0) {
         perror("Unable to open joystick device");
         return 1;
-    }
+    } 
 
     struct libevdev *dev = NULL;
     int rc = libevdev_new_from_fd(fd, &dev);

@@ -1,12 +1,12 @@
 
 CC = gcc
-CFLAGS = -g -Iinclude -I/usr/include/libevdev-1.0/ -w
+CFLAGS = -g -Iinclude -w
 SRC_DIR = src
 OBJ_DIR = obj
 BIN_DIR = bin
 PFLAGS = -lncurses -ltinfo -lmenu -pthread -levdev -std=gnu99
 
-CONFIG ?= debug
+CONFIG ?= 0
 EXPERIMENTAL ?= exp
 
 # List of source files (excluding .c extension)

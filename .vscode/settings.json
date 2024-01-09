@@ -10,6 +10,7 @@
         "includes.h": "c",
         "shares.h": "c",
         "ncurses.h": "c",
-        "funcs.h": "c"
+        "funcs.h": "c",
+        "socket.h": "c"
     }
 }

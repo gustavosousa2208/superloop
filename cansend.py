@@ -1,6 +1,6 @@
 import sys, os, time
 
-interface = "vcan0"
+interface = "can0"
 
 def sendMessages():
     while True:

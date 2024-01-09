@@ -54,25 +54,25 @@ struct canSendThreadDataStruct {
 };
 
 struct allData {
-    uint16_t sharedMotorCurrent;
-    uint16_t sharedInverterBatteryVoltage;
-    uint16_t sharedMotorVoltage;
-    uint16_t sharedInverterAirTemperature;
-    
-    uint16_t sharedInverterMosfetTemperature1;
-    uint16_t sharedInverterMosfetTemperature2;
-    uint16_t sharedLogicalState;
     uint16_t sharedCommandedSpeed;
+    uint16_t logicalState;
+    uint16_t encoderVelocity;
+    uint16_t encoderPulseCounter;
+
+    uint16_t inverterMosfetTemperature1;
+    uint16_t inverterMosfetTemperature2;
+    uint16_t inverterAirTemperature;
+
+    uint16_t motorCurrent;
+    uint16_t inverterBatteryVoltage;
+    uint16_t motorVoltage;
+    uint16_t vehicleSpeed;
 
     uint16_t sharedBMSVoltage;
     uint16_t sharedBMSCurrent;
     uint16_t sharedBMSTemperature;
     uint16_t sharedBMSRemainingCapacity;
-    
     uint16_t sharedBMSTotalCapacity;
-    uint16_t extra1;
-    uint16_t extra2;
-    uint16_t extra3;
 };
 
 struct messageWithTimestamp {

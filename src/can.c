@@ -38,29 +38,14 @@ void *readInverterData(void * arg) {
 
         pthread_mutex_lock(&inverterDataMutex);
         switch(thisFrame.can_id){
-            case 0x03:
-                all_data.sharedMotorCurrent = (thisFrame.data[1] << 8) | (thisFrame.data[0]);
+            case 0x701:
+                memcpy((uint16_t *) &all_data, thisFrame.data, 8);
                 break;
-            case 0x04:
-                all_data.sharedInverterBatteryVoltage = (thisFrame.data[1] << 8) | (thisFrame.data[0]);
+            case 0x702:
+                memcpy((uint16_t *) &all_data + 4, thisFrame.data, 6);
                 break;
-            case 0x07:
-                all_data.sharedMotorVoltage = (thisFrame.data[1] << 8) | (thisFrame.data[0]);
-                break;
-            case 0x30:
-                all_data.sharedInverterMosfetTemperature1 = (thisFrame.data[1] << 8) | (thisFrame.data[0]);
-                break;
-            case 0x33:
-                all_data.sharedInverterMosfetTemperature2 = (thisFrame.data[1] << 8) | (thisFrame.data[0]);
-                break;
-            case 0x34:
-                all_data.sharedInverterAirTemperature = (thisFrame.data[1] << 8) | (thisFrame.data[0]);
-                break;
-            case 0x680:
-                all_data.sharedLogicalState = (thisFrame.data[1] << 8) | (thisFrame.data[0]);
-                break;
-            case 0x685:
-                all_data.sharedCommandedSpeed = (thisFrame.data[1] << 8) | (thisFrame.data[0]);
+            case 0x703:
+                memcpy((uint16_t *) &all_data + 7, thisFrame.data, 8);
                 break;
             default:
                 break;

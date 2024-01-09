@@ -10,6 +10,11 @@ rascunho pra comunicação can, rs485 e protocolos de segurança para controle d
 - [ ] Interface para enviar velocidade, comandos e ler velocidade
 - [ ] Ao invés de mandar a voltagem pra ui como float, melhor mandar como inteiro e colocar um ponto de mentira no ui?
 - [ ] No WSL a interface fica resposiva e com relativa folga na latência, só que seja na RPI ou OPI a interface fica menos responsiva, só que com menor latência 🤔
+- [ ] Implementar timestamps
+- [ ] Implementar um sistema de log
+- [ ] Implementar um sistema de configuração
+- [ ] Usar memcpy ao invés de for para copiar structs
+- [ ] Juntar mensagens no inversor numa ID só
 
 ## Dúvidas
 

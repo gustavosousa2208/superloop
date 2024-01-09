@@ -73,6 +73,9 @@ void *readInverterData(void * arg) {
     return NULL;
 }
 
+void* readInverterDataWithTimestamp(void* arg) {
+    
+
 uint16_t telegramReceive2(int s) {
     struct timeval timeout;
     struct can_frame frame;

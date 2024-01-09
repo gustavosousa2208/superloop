@@ -1,8 +1,8 @@
 // server.c
 #include "funcs.h"
 #include "shares.h"
+#include "config.h"
 
-#define PORT 12345
 #define MAX_BUFFER_SIZE 1024
 
 void * server(void * arg) {
@@ -26,7 +26,7 @@ void * server(void * arg) {
 
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(PORT);
+    address.sin_port = htons(SERVER_PORT);
 
     // Forcefully attaching socket to the port 8080
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {

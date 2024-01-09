@@ -6,7 +6,11 @@ const char *serial_interface = "/dev/tnt0"; // ttyUSB0 esse ai e virtual
 int sharedCounter = 0;
 volatile int uiIsFinished = 0;
 
-struct allData all_data;
+// #ifdef EXPERIMENTAL
+//     struct allDataWithTimestamp allData;
+// #else
+    struct allData all_data;
+// #endif
 
 pthread_mutex_t inverterDataMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t BMSDataMutex = PTHREAD_MUTEX_INITIALIZER;
@@ -14,8 +18,6 @@ pthread_mutex_t canInterfaceMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t serialInterfaceMutex = PTHREAD_MUTEX_INITIALIZER;
 
 double allInverterDataDeltaTime = {0, 0};
-
-const int desiredPort = 12345;
 
 struct timespec lastTelegram;
 
@@ -30,10 +32,8 @@ int mainFlow () {
     }
 
     pthread_t canThread, uiThread, BMSThread, logInverterThread, serverThread;
-    struct canReadThreadDataStruct canThreadData;
-    canThreadData.socket_descriptor = sock;
 
-    if(pthread_create(&canThread, NULL, readInverterData, &canThreadData)){
+    if(pthread_create(&canThread, NULL, readInverterData, (void *)sock)){
         perror("ERROR: can thread create");
         return 1;
     }
@@ -43,15 +43,15 @@ int mainFlow () {
         return 1;
     }
 
-    // if(pthread_create(&uiThread, NULL, windowLoop, NULL)){
-    //     perror("ERROR: ui thread create");
-    //     return 1;
-    // }
-
-    if(pthread_create(&serverThread, NULL, server, NULL)){
-        perror("ERROR: server thread create");
+    if(pthread_create(&uiThread, NULL, windowLoop, NULL)){
+        perror("ERROR: ui thread create");
         return 1;
     }
+
+    // if(pthread_create(&serverThread, NULL, server, NULL)){
+    //     perror("ERROR: server thread create");
+    //     return 1;
+    // }
 
     if(pthread_create(&logInverterThread, NULL, logInverter, NULL)){
         perror("ERROR: inverter log create");
@@ -110,13 +110,10 @@ int main(int argc, char *argv[]) {
     // printf("starting...");
     // serialSendReceive(NULL);
 
-    #ifdef DEBUG
-        printf("we debug!");
-    #else
-        printf("we dont");
-    #endif
+    
 
-    // mainFlow();
+    mainFlow();
+
     // pthread_t controllerThread;
     // if(pthread_create(&controllerThread, NULL, readDS4, NULL)){
     //     perror("ERROR: controller thread create");

@@ -21,8 +21,7 @@ void *sendInverterData(void * arg) {
 }
 
 void *readInverterData(void * arg) {
-    struct canReadThreadDataStruct *args = (struct canReadThreadDataStruct *)arg;
-    int s = args->socket_descriptor;
+    int *s = (int *)arg;
 
     int allReceived = 0;
     struct timespec start, end;
@@ -74,6 +73,8 @@ void *readInverterData(void * arg) {
 }
 
 // void* readInverterDataWithTimestamp(void* arg) {
+
+// }
     
 
 uint16_t telegramReceive2(int s) {

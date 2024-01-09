@@ -7,6 +7,7 @@ BIN_DIR = bin
 PFLAGS = -lncurses -ltinfo -lmenu -pthread -levdev -std=gnu99
 
 CONFIG ?= debug
+EXPERIMENTAL ?= exp
 
 # List of source files (excluding .c extension)
 SRC_FILES = $(notdir $(basename $(wildcard $(SRC_DIR)/*.c)))
@@ -23,6 +24,11 @@ all: clean $(TARGET) run
 ifeq ($(CONFIG), debug)
     CFLAGS += -DDEBUG
 endif
+
+ifeq ($(EXPERIMENTAL), exp)
+    CFLAGS += -DEXPERIMENTAL
+endif
+
 
 $(TARGET): $(OBJ_FILES)
 	@mkdir -p $(BIN_DIR) 

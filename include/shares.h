@@ -15,8 +15,6 @@ extern pthread_mutex_t BMSDataMutex;
 
 extern double allInverterDataDeltaTime;
 
-extern const int desiredPort;
-
 extern const char *serial_interface;
 
 extern volatile int uiIsFinished;

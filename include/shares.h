@@ -3,6 +3,8 @@
 
 extern const char *can_interface;
 
+extern int sock;
+
 extern pthread_mutex_t canInterfaceMutex;
 extern pthread_mutex_t inverterDataMutex;
 
@@ -21,5 +23,7 @@ extern volatile int uiIsFinished;
 
 extern struct timespec lastTelegram;
 extern struct can_frame thisFrame;
+
+extern int pipefd[2];  // File descriptors for the pipe
 
 #endif // SHARES_H

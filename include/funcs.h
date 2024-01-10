@@ -31,6 +31,7 @@
 
 
 #define CAN_RECV_TIMEOUT_USECONDS 200000
+#define BUFFER_SIZE 256
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 extern char *choices[];
 #define to_read 47
@@ -113,5 +114,6 @@ void sigintHandler(int sig_num);
 void *logInverter (void* arg);
 void * server (void* arg);
 void * readDS4(void *arg );
+int sendInverterDataOnce(struct can_frame thisFrame);
 
 #endif

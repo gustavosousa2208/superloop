@@ -4,8 +4,10 @@
 // no raspberry é event2 e na orange é event8
 
 void * readDS4(void *arg ) {
+    struct can_frame thisFrame;
     const char *device_path = "/dev/input/event8";
     int fd = open(device_path, O_RDONLY | O_NONBLOCK);
+    bool remote = false;
 
     if (fd < 0) {
         perror("Unable to open joystick device");
@@ -27,21 +29,41 @@ void * readDS4(void *arg ) {
         struct input_event ev;
         rc = libevdev_next_event(dev, LIBEVDEV_READ_FLAG_NORMAL, &ev);
 
+        // não to tratando erros do evdev, simplesmente ignorando e printando o que vier
         if (rc == LIBEVDEV_READ_STATUS_SUCCESS) {
-            if (ev.type == EV_ABS) {
-                printf("Axis %d: %d\n", ev.code, ev.value);
-            } else if (ev.type == EV_KEY) {
-                printf("Button %d: %d\n", ev.code, ev.value);
+
+            switch(ev.code) {
+                case 315:
+                    if(remote) break;
+                    if (ev.value == 1) {
+                        thisFrame.can_id = 0x222;
+                        thisFrame.can_dlc = 1;
+
+                        thisFrame.data[0] = 0x06;
+
+                        remote = true;
+                    }
+                    if(sendInverterDataOnce(thisFrame) == -1){
+                        printf("couldnt send");
+                        return 1;
+                    }
+                    break;
+                case 304:
+                    if (ev.value == 1) {
+                        thisFrame.can_id = 0x222;
+                        thisFrame.can_dlc = 1;
+
+                        thisFrame.data[0] = 0x00    ;
+                    }
+                    if(sendInverterDataOnce(thisFrame) == -1){
+                        printf("couldnt send");
+                        return 1;
+                    }
+                    break;
+                default:
+                    break;
             }
-        } else if (rc == LIBEVDEV_READ_STATUS_SYNC) {
-            // Resync can happen for various reasons; it's not an error.
-            continue;
-        } 
-        // else if (rc < 0) {
-        //     // An error occurred.
-        //     printf("Failed to handle events: %s\n", strerror(-rc));
-        //     break;
-        // }
+        }
     }
 
     libevdev_free(dev);

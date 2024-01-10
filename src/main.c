@@ -5,12 +5,12 @@ const char *serial_interface = "/dev/tnt0"; // ttyUSB0 esse ai e virtual
 
 int sharedCounter = 0;
 volatile int uiIsFinished = 0;
+int sock;
 
-// #ifdef EXPERIMENTAL
-//     struct allDataWithTimestamp allData;
-// #else
-    struct allData all_data;
-// #endif
+int pipefd[2];  // File descriptors for the pipe
+
+struct allData all_data;
+
 
 pthread_mutex_t inverterDataMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t BMSDataMutex = PTHREAD_MUTEX_INITIALIZER;
@@ -24,16 +24,27 @@ struct timespec lastTelegram;
 void *serialSendReceive (void* arg);
 
 int mainFlow () {
-    int sock = createCANSocket(CAN_INTERFACE);
+    sock = createCANSocket(CAN_INTERFACE);
     
     if (sock == -1) {
         printf("Failed to create the CAN socket.\n");
         return 1;
     }
 
-    pthread_t canThread, uiThread, BMSThread, logInverterThread, serverThread;
+    // // Create a pipe
+    // if (pipe(pipefd) == -1) {
+    //     perror("Error creating pipe");
+    //     exit(EXIT_FAILURE);
+    // }
 
-    if(pthread_create(&canThread, NULL, readInverterData, (void *)sock)){
+    pthread_t canThread, uiThread, BMSThread, logInverterThread, serverThread, carControlThread;
+
+    if(pthread_create(&carControlThread, NULL, sendInverterData, NULL)){
+        perror("ERROR: send thread create");
+        return 1;
+    }
+
+    if(pthread_create(&canThread, NULL, readInverterData, NULL)){
         perror("ERROR: can thread create");
         return 1;
     }
@@ -71,38 +82,11 @@ int mainFlow () {
     pthread_mutex_destroy(&serialInterfaceMutex);
     pthread_mutex_destroy(&canInterfaceMutex);
 
+    close(pipefd[0]);
+    close(pipefd[1]);
+
     printf("Thread has finished.\n");
     return 0;
-}
-
-int getCommandLineArguments(int argc, char *argv[]) {
-    const char *input_speed = NULL;
-    const char *mode = NULL;
-
-    for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-s") == 0) {
-            // Check if there's another argument after -i
-            if (i + 1 < argc) {
-                input_speed = argv[i + 1];
-                i++;  // Skip the next argument
-            } else {
-                fprintf(stderr, "Error: -s option requires an argument.\n");
-                return 1;
-            }
-        } else if (strcmp(argv[i], "-t") == 0) {
-            // Check if there's another argument after -o
-            if (i + 1 < argc) {
-                mode = argv[i + 1];
-                i++;  // Skip the next argument
-            } else {
-                fprintf(stderr, "Error: -o option requires an argument.\n");
-                return 1;
-            }
-        } else {
-            fprintf(stderr, "Error: Unknown option: %s\n", argv[i]);
-            return 1;
-        }
-    }
 }
 
 int main(int argc, char *argv[]) {
@@ -114,13 +98,21 @@ int main(int argc, char *argv[]) {
 
     mainFlow();
 
-    // pthread_t smoeThread;
-    // if(pthread_create(&smoeThread, NULL, readInverterData, (int *) sock)){
-    //     perror("ERROR: controller thread create");
-    //     return 1;
-    // } else {
-    //     printf("controller thread created\n");
-    // }
-    // pthread_join(smoeThread, NULL);
+    
+    sock = createCANSocket(CAN_INTERFACE);
+    
+    if (sock == -1) {
+        printf("Failed to create the CAN socket.\n");
+        return 1;
+    }    
+
+    pthread_t smoeThread;
+    if(pthread_create(&smoeThread, NULL, readDS4, (int *) sock)){
+        perror("ERROR: controller thread create");
+        return 1;
+    } else {
+        printf("controller thread created\n");
+    }
+    pthread_join(smoeThread, NULL);
     return 0;
 }

@@ -149,25 +149,25 @@ void *windowLoop(void* arg) {
         pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 7, 41, str);
 
-        ok = (all_data_temp.logicalState & 8) > 0 ? '*' : ' ';
+        ok = (all_data_temp.logicalState & 256) > 0 ? '*' : ' ';
         sprintf(str, "[%c] Runnning: ", ok);
         mvwprintw(win, 12, 2, str);
-        ok = (all_data_temp.logicalState & 9) > 0 ? '*' : ' ';
+        ok = (all_data_temp.logicalState & 512) > 0 ? '*' : ' ';
         sprintf(str, "[%c] Enabled: ", ok);
         mvwprintw(win, 13, 2, str);
-        ok = (all_data_temp.logicalState & 10) > 0 ? '*' : ' ';
+        ok = (all_data_temp.logicalState & 1024) > 0 ? '*' : ' ';
         sprintf(str, "[%c] Clockwise: ", ok);
         mvwprintw(win, 14, 2, str);
-        ok = (all_data_temp.logicalState & 11) > 0 ? '*' : ' ';
+        ok = (all_data_temp.logicalState & 2048) > 0 ? '*' : ' ';
         sprintf(str, "[%c] JOG: ", ok);
         mvwprintw(win, 15, 2, str);
-        ok = (all_data_temp.logicalState & 12) > 0 ? '*' : ' ';
+        ok = (all_data_temp.logicalState & 4096) > 0 ? '*' : ' ';
         sprintf(str, "[%c] Remote: ", ok);
         mvwprintw(win, 16, 2, str);
-        ok = (all_data_temp.logicalState & 13) > 0 ? '*' : ' ';
+        ok = (all_data_temp.logicalState & 8192) > 0 ? '*' : ' ';
         sprintf(str, "[%c] SUB: ", ok);
         mvwprintw(win, 17, 2, str);
-        ok = (all_data_temp.logicalState & 15) > 0 ? '*' : ' ';
+        ok = (all_data_temp.logicalState & 32768) > 0 ? '*' : ' ';
         sprintf(str, "[%c] FAULT: ", ok);
         
 

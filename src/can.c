@@ -1,34 +1,65 @@
 #include "funcs.h"
 #include "shares.h"
 
-struct can_frame thisFrame;
-
 void *sendInverterData(void * arg) {
-    struct canSendThreadDataStruct *args = (struct canSendThreadDataStruct *)arg;
-    int s = args->socket_descriptor;
+    char recv_data[1];
+    ssize_t bytesRead;
+    struct can_frame thisFrame;
 
-    struct can_frame thisFrame = args->frame;
-    thisFrame = args->frame;
+    while (1) {
+        bytesRead = read(pipefd[0], recv_data, 1);
 
-    pthread_mutex_lock(&canInterfaceMutex);
-    if (write(s, &thisFrame, sizeof(struct can_frame)) == -1) {
-        perror("Write error");
-        return NULL;
+        if (bytesRead == -1) {
+            perror("Error reading from pipe");
+        } else if (bytesRead > 0) {
+            if(recv_data[0] == "S"){
+                thisFrame.can_id = 0x685;
+                thisFrame.can_dlc = 2;
+
+                thisFrame.data[0] = 0x00;
+                thisFrame.data[1] = 0x02;
+            } else if (recv_data[0] == "P"){
+                thisFrame.can_id = 0x685;
+                thisFrame.can_dlc = 2;
+
+                thisFrame.data[0] = 0x00;
+                thisFrame.data[1] = 0;
+            }
+
+            pthread_mutex_lock(&canInterfaceMutex);
+            if (write(sock, &thisFrame, sizeof(struct can_frame)) == -1) {
+                perror("Write error");
+                return NULL;
+            }
+            pthread_mutex_unlock(&canInterfaceMutex);
+        } else {
+            // vou fazer essa thread esperar um pouco pra não ficar consumindo processamento
+            usleep(100000);  
+        }
     }
-    pthread_mutex_unlock(&canInterfaceMutex);
 
     return NULL;
 }
 
-void *readInverterData(void * arg) {
-    int *s = (int *)arg;
+int sendInverterDataOnce(struct can_frame thisFrame){
 
+    pthread_mutex_lock(&canInterfaceMutex);
+    if (write(sock, &thisFrame, sizeof(struct can_frame)) == -1) {
+        return -1;
+    }
+    pthread_mutex_unlock(&canInterfaceMutex);
+
+    return 0;
+}
+
+void *readInverterData(void * arg) {
     int allReceived = 0;
     struct timespec start, end;
+    struct can_frame thisFrame;
 
     while (1) {
         pthread_mutex_lock(&canInterfaceMutex);
-        ssize_t nbytes = read(s, &thisFrame, sizeof(struct can_frame));
+        ssize_t nbytes = read(sock, &thisFrame, sizeof(struct can_frame));
         pthread_mutex_unlock(&canInterfaceMutex);
 
         if (nbytes < 0) {

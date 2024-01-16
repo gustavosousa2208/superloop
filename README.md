@@ -19,3 +19,26 @@ rascunho pra comunicação can, rs485 e protocolos de segurança para controle d
 ## Dúvidas
 
 - [ ] Se o BMS já mostra corrente e tensão, é preciso coletar esses dados do inversor também?
+
+## Formato de mensagens
+
+É possível exigir do inversor que ele envie múltiplos parâmetros numa mesma mensagem CAN, então aqui tem o formato de mensagens que o inversor envia e quais envia.
+
+Obs.: No WEG WLP coloquei os id's como FF(XX), mas o FF truncou para 07(XX), devido ao máximo do CAN 1.0 que estamos usando.
+
+ID : 0x701 -> 685, 680, 38, 39
+16 bits - Setpoint RPM can : 685
+16 bits - Estado lógico do inversor : 680
+16 bits - Leitura de RPM do encoder : 38
+16 bits - Contador de pulsos do encoder : 39
+
+ID : 0x702 -> 30, 33, 34
+16 bits - Temperatura do MOSFET 1: 30
+16 bits - Temperatura do MOSFET 2: 33
+16 bits - Temperatura do ar interno : 34
+
+ID : 0x703 -> 3, 4, 7, 8
+16 bits - Corrente do motor : 3
+16 bits - Tensão da bateria : 4
+16 bits - Tensão de saída (motor) : 7
+16 bits - Velocidade do veículo (km/h) : 8

@@ -32,5 +32,5 @@ if __name__ == "__main__":
         # you can start listening before controller is paired, as long as you pair it within the timeout window
         controller.listen(timeout=60, on_disconnect=controller.disconnect)
     
-# FIXME: se não tiver js0 em /dev da modprobe em joydev e usbhid https://wiki.archlinux.org/title/Gamepad
+# INFO: se não tiver js0 em /dev da modprobe em joydev e usbhid https://wiki.archlinux.org/title/Gamepad
 # 

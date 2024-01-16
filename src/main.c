@@ -10,6 +10,7 @@ int sock;
 int pipefd[2];  // File descriptors for the pipe
 
 struct allData all_data;
+struct inverterDataChunk all_data_with_timestamp[3];
 
 
 pthread_mutex_t inverterDataMutex = PTHREAD_MUTEX_INITIALIZER;
@@ -44,7 +45,7 @@ int mainFlow () {
         return 1;
     }
 
-    if(pthread_create(&canThread, NULL, readInverterData, NULL)){
+    if(pthread_create(&canThread, NULL, readInverterDataWithTimestamp, NULL)){
         perror("ERROR: can thread create");
         return 1;
     }
@@ -81,9 +82,6 @@ int mainFlow () {
     pthread_mutex_destroy(&inverterDataMutex);
     pthread_mutex_destroy(&serialInterfaceMutex);
     pthread_mutex_destroy(&canInterfaceMutex);
-
-    close(pipefd[0]);
-    close(pipefd[1]);
 
     printf("Thread has finished.\n");
     return 0;

@@ -53,8 +53,6 @@ int sendInverterDataOnce(struct can_frame thisFrame){
 }
 
 void *readInverterData(void * arg) {
-    int allReceived = 0;
-    struct timespec start, end;
     struct can_frame thisFrame;
 
     while (1) {
@@ -82,15 +80,47 @@ void *readInverterData(void * arg) {
                 break;
         }
         pthread_mutex_unlock(&inverterDataMutex);
+    }
+    return NULL;
+}
+
+void* readInverterDataWithTimestamp(void* arg) {
+    struct timespec start, end;
+    struct can_frame thisFrame;
+
+    while (1) {
+        pthread_mutex_lock(&canInterfaceMutex);
+        ssize_t nbytes = read(sock, &thisFrame, sizeof(struct can_frame));
+        pthread_mutex_unlock(&canInterfaceMutex);
+
+        if (nbytes < 0) {
+            perror("read");
+            break;
+        }
+
+        pthread_mutex_lock(&inverterDataMutex);
+        switch(thisFrame.can_id){
+            case 0x701:
+                memcpy((uint16_t *) &all_data_with_timestamp[0].data, thisFrame.data, 8);
+                clock_gettime(CLOCK_MONOTONIC, &all_data_with_timestamp->timestamp);
+                break;
+            case 0x702:
+                memcpy((uint16_t *) &all_data_with_timestamp[1].data + 4, thisFrame.data, 6);
+                clock_gettime(CLOCK_MONOTONIC, &all_data_with_timestamp->timestamp);
+                break;
+            case 0x703:
+                memcpy((uint16_t *) &all_data_with_timestamp[2].data + 7, thisFrame.data, 8);
+                clock_gettime(CLOCK_MONOTONIC, &all_data_with_timestamp->timestamp);
+                break;
+            default:
+                break;
+        }
+        pthread_mutex_unlock(&inverterDataMutex);
 
         clock_gettime(CLOCK_MONOTONIC, &lastTelegram);
     }
     return NULL;
 }
-
-// void* readInverterDataWithTimestamp(void* arg) {
-
-// }
     
 
 uint16_t telegramReceive2(int s) {

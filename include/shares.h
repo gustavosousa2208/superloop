@@ -9,6 +9,7 @@ extern pthread_mutex_t canInterfaceMutex;
 extern pthread_mutex_t inverterDataMutex;
 
 extern struct allData all_data;
+extern struct inverterDataChunk all_data_with_timestamp[3];
 
 extern int sharedCounter;
 

@@ -76,32 +76,9 @@ struct allData {
     uint16_t sharedBMSTotalCapacity;
 };
 
-struct messageWithTimestamp {
-    uint16_t message;
+struct inverterDataChunk {
+    uint16_t data[4];
     struct timespec timestamp;
-};
-
-// isso aqui é bizarro, mas fica tudo centralizado
-struct allDataWithTimestamp {
-    struct messageWithTimestamp sharedMotorCurrent;
-    struct messageWithTimestamp sharedInverterBatteryVoltage;
-    struct messageWithTimestamp sharedMotorVoltage;
-    struct messageWithTimestamp sharedInverterAirTemperature;
-    
-    struct messageWithTimestamp sharedInverterMosfetTemperature1;
-    struct messageWithTimestamp sharedInverterMosfetTemperature2;
-    struct messageWithTimestamp sharedLogicalState;
-    struct messageWithTimestamp sharedCommandedSpeed;
-
-    struct messageWithTimestamp sharedBMSVoltage;
-    struct messageWithTimestamp sharedBMSCurrent;
-    struct messageWithTimestamp sharedBMSTemperature;
-    struct messageWithTimestamp sharedBMSRemainingCapacity;
-    
-    struct messageWithTimestamp sharedBMSTotalCapacity;
-    struct messageWithTimestamp extra1;
-    struct messageWithTimestamp extra2;
-    struct messageWithTimestamp extra3;
 };
 
 void *sendInverterData(void * arg);
@@ -115,5 +92,6 @@ void *logInverter (void* arg);
 void * server (void* arg);
 void * readDS4(void *arg );
 int sendInverterDataOnce(struct can_frame thisFrame);
+void* readInverterDataWithTimestamp(void* arg);
 
 #endif

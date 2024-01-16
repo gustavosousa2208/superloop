@@ -5,7 +5,7 @@
 
 void * readDS4(void *arg ) {
     struct can_frame thisFrame;
-    const char *device_path = "/dev/input/event8";
+    const char *device_path = "/dev/input/event2";
     int fd = open(device_path, O_RDONLY | O_NONBLOCK);
     bool remote = false;
 
@@ -31,6 +31,10 @@ void * readDS4(void *arg ) {
 
         // não to tratando erros do evdev, simplesmente ignorando e printando o que vier
         if (rc == LIBEVDEV_READ_STATUS_SUCCESS) {
+            // printf("Event: %s %s %d\n",
+            //         libevdev_event_type_get_name(ev.type),
+            //         libevdev_event_code_get_name(ev.type, ev.code),
+            //         ev.value);
 
             switch(ev.code) {
                 case 315:
@@ -63,6 +67,8 @@ void * readDS4(void *arg ) {
                 default:
                     break;
             }
+            
+
         }
     }
 

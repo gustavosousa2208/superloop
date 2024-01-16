@@ -3,11 +3,17 @@
 
 // no raspberry é event2 e na orange é event8
 
+int vel, pedal;
+int gain = 20;
+int decay = 20;
+int max_vel = 800;
+int inc_time = 5;
+bool remote = false;
+
 void * readDS4(void *arg ) {
     struct can_frame thisFrame;
     const char *device_path = "/dev/input/event2";
     int fd = open(device_path, O_RDONLY | O_NONBLOCK);
-    bool remote = false;
 
     if (fd < 0) {
         perror("Unable to open joystick device");
@@ -31,10 +37,7 @@ void * readDS4(void *arg ) {
 
         // não to tratando erros do evdev, simplesmente ignorando e printando o que vier
         if (rc == LIBEVDEV_READ_STATUS_SUCCESS) {
-            // printf("Event: %s %s %d\n",
-            //         libevdev_event_type_get_name(ev.type),
-            //         libevdev_event_code_get_name(ev.type, ev.code),
-            //         ev.value);
+            // printf("Event -> type %d code : %d value: %d\n",ev.type, ev.code, ev.value);
 
             switch(ev.code) {
                 case 315:
@@ -64,11 +67,13 @@ void * readDS4(void *arg ) {
                         return 1;
                     }
                     break;
+                case 5:
+                    pedal = (int) ((ev.value * 100) / 255); //vai de 0 a 100 muito rápido 
+                    break;
                 default:
                     break;
             }
             
-
         }
     }
 
@@ -76,4 +81,31 @@ void * readDS4(void *arg ) {
     close(fd);
 
     return 0;
+}
+
+void * setRPM(void * arg) {
+    int max_vel_pedal = 0;
+    int last_pedal;
+
+    while(1){
+        if (remote) {
+            max_vel_pedal = (int) ((pedal * max_vel) / 100);
+            if (pedal > 0) {
+                if (vel < max_vel_pedal) {
+                    vel += gain;
+                } else {
+                    vel = max_vel_pedal;
+                }
+            } else {
+                if (vel > 0) {
+                    vel -= decay;
+                } else {
+                    vel = 0;
+                }
+            }
+            last_pedal = pedal;
+        }
+    }
+
+    printf("current vel: %d\n", vel);
 }

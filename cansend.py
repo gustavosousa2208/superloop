@@ -17,18 +17,12 @@ def sendMessages():
             # os.system(f"cansend {interface} 680#010F")
             # os.system(f"cansend {interface} 685#0000")
             
-            os.system(f"cansend {interface} 701#0000010F0000")
+            os.system(f"cansend {interface} 701#0001000100010001")
+            os.system(f"cansend {interface} 702#000200020002")
+            os.system(f"cansend {interface} 703#0003790200030003")
             
-            time.sleep(1)
-            os.system(f"cansend {interface} 003#7902")
-            os.system(f"cansend {interface} 004#7802") # some voltage
-            os.system(f"cansend {interface} 007#7802") # some other voltage
-            os.system(f"cansend {interface} 030#3501")
-            os.system(f"cansend {interface} 033#3501")
-            os.system(f"cansend {interface} 034#3501")
-            os.system(f"cansend {interface} 680#010F")
-            os.system(f"cansend {interface} 685#0000")
-            time.sleep(1)
+            time.sleep(0.1)
+            
         except KeyboardInterrupt:
             print("Exiting...")
             exit()

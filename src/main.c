@@ -55,7 +55,12 @@ int mainFlow () {
         return 1;
     }
 
-    if(pthread_create(&uiThread, NULL, windowLoop, NULL)){
+    // if(pthread_create(&uiThread, NULL, windowLoop, NULL)){
+    //     perror("ERROR: ui thread create");
+    //     return 1;
+    // }
+
+    if(pthread_create(&uiThread, NULL, windowLoopTimestamp, NULL)){
         perror("ERROR: ui thread create");
         return 1;
     }
@@ -94,7 +99,7 @@ int main(int argc, char *argv[]) {
 
     
 
-    mainFlow();
+    // mainFlow();
 
     
     sock = createCANSocket(CAN_INTERFACE);

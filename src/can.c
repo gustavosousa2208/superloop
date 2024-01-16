@@ -105,11 +105,11 @@ void* readInverterDataWithTimestamp(void* arg) {
                 clock_gettime(CLOCK_MONOTONIC, &all_data_with_timestamp->timestamp);
                 break;
             case 0x702:
-                memcpy((uint16_t *) &all_data_with_timestamp[1].data + 4, thisFrame.data, 6);
+                memcpy((uint16_t *) &all_data_with_timestamp[1].data, thisFrame.data, 6);
                 clock_gettime(CLOCK_MONOTONIC, &all_data_with_timestamp->timestamp);
                 break;
             case 0x703:
-                memcpy((uint16_t *) &all_data_with_timestamp[2].data + 7, thisFrame.data, 8);
+                memcpy((uint16_t *) &all_data_with_timestamp[2].data, thisFrame.data, 8);
                 clock_gettime(CLOCK_MONOTONIC, &all_data_with_timestamp->timestamp);
                 break;
             default:

@@ -121,7 +121,7 @@ void *windowLoop(void* arg) {
         mvwprintw(win, 6, 1, str);
         sprintf(str, " Mosfet 2 Temperature:       %0.1fC", (float) all_data_temp.inverterMosfetTemperature1/10);
         mvwprintw(win, 7, 1, str);
-        sprintf(str, " Internal Air Temperature    %0.1fC", (float) all_data_temp.inverterMosfetTemperature1/10);
+        sprintf(str, " Internal Air Temperature    %0.1fC", (float) all_data_temp.inverterAirTemperature/10);
         mvwprintw(win, 8, 1, str);
 
         pthread_mutex_lock(&serialInterfaceMutex);
@@ -265,18 +265,18 @@ void *windowLoopTimestamp(void* arg) {
     
     while (1) {
 
-        lastReceivedTime = (double) ((double)lastTelegram.tv_sec + (double)lastTelegram.tv_nsec / 10e6);
-        if (lastReceivedTime > lastLastReceivedTime) {
-            lat = lastReceivedTime - lastLastReceivedTime;
-            lastLastReceivedTime = lastReceivedTime;
-        }
+        // lastReceivedTime = (double) ((double)lastTelegram.tv_sec + (double)lastTelegram.tv_nsec / 10e6);
+        // if (lastReceivedTime > lastLastReceivedTime) {
+        //     lat = lastReceivedTime - lastLastReceivedTime;
+        //     lastLastReceivedTime = lastReceivedTime;
+        // }
 
-        clock_gettime(CLOCK_MONOTONIC, &start);
-        sprintf(str, "Latency (lat): %e", lat);
-        mvwprintw(win, row - 4, 1, str);
+        // clock_gettime(CLOCK_MONOTONIC, &start);
+        // sprintf(str, "Latency (lat): %e", lat);
+        // mvwprintw(win, row - 4, 1, str);
 
-        sprintf(str, "Max. Latency: %e", maxTime);
-        mvwprintw(win, row - 4, 41, str);
+        // sprintf(str, "Max. Latency: %e", maxTime);
+        // mvwprintw(win, row - 4, 41, str);
         c = getch();                                                                                                                             
         switch (c) {
             case KEY_DOWN:

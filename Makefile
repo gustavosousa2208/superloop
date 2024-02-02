@@ -20,6 +20,8 @@ TARGET = $(BIN_DIR)/superloop
 
 all: clean $(TARGET) run
 
+compile: clean $(TARGET)
+
 # Configuration selection
 ifeq ($(CONFIG), debug)
     CFLAGS += -DDEBUG
@@ -37,8 +39,6 @@ $(TARGET): $(OBJ_FILES)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
-
-compile: clean $(TARGET)
 
 run:
 	sudo ./bin/superloop

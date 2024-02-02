@@ -40,20 +40,20 @@ int mainFlow () {
 
     pthread_t canThread, uiThread, BMSThread, logInverterThread, serverThread, carControlThread;
 
-    if(pthread_create(&carControlThread, NULL, sendInverterData, NULL)){
-        perror("ERROR: send thread create");
-        return 1;
-    }
+    // if(pthread_create(&carControlThread, NULL, sendInverterData, NULL)){
+    //     perror("ERROR: send thread create");
+    //     return 1;
+    // }
 
-    if(pthread_create(&canThread, NULL, readInverterDataWithTimestamp, NULL)){
-        perror("ERROR: can thread create");
-        return 1;
-    }
+    // if(pthread_create(&canThread, NULL, readInverterDataWithTimestamp, NULL)){
+    //     perror("ERROR: can thread create");
+    //     return 1;
+    // }
 
-    if(pthread_create(&BMSThread, NULL, serialSendReceive, NULL)){
-        perror("ERROR: BMS thread create");
-        return 1;
-    }
+    // if(pthread_create(&BMSThread, NULL, serialSendReceive, NULL)){
+    //     perror("ERROR: BMS thread create");
+    //     return 1;
+    // }
 
     // if(pthread_create(&uiThread, NULL, windowLoop, NULL)){
     //     perror("ERROR: ui thread create");
@@ -70,10 +70,10 @@ int mainFlow () {
     //     return 1;
     // }
 
-    if(pthread_create(&logInverterThread, NULL, logInverter, NULL)){
-        perror("ERROR: inverter log create");
-        return 1;
-    }
+    // if(pthread_create(&logInverterThread, NULL, logInverter, NULL)){
+    //     perror("ERROR: inverter log create");
+    //     return 1;
+    // }
 
     while(!uiIsFinished){
 
@@ -97,10 +97,7 @@ int main(int argc, char *argv[]) {
     // printf("starting...");
     // serialSendReceive(NULL);
 
-    
-
-    // mainFlow();
-
+    mainFlow();
     
     sock = createCANSocket(CAN_INTERFACE);
     

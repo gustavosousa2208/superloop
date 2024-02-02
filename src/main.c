@@ -12,6 +12,7 @@ int pipefd[2];  // File descriptors for the pipe
 struct allData all_data;
 struct inverterDataChunk all_data_with_timestamp[3];
 
+volatile sig_atomic_t ctrlCPressed = 0;
 
 pthread_mutex_t inverterDataMutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t BMSDataMutex = PTHREAD_MUTEX_INITIALIZER;
@@ -24,6 +25,11 @@ struct timespec lastTelegram;
 
 void *serialSendReceive (void* arg);
 
+void sigintHandler(int signal) {
+    ctrlCPressed = 1;
+    exit(0);
+}
+
 int mainFlow () {
     sock = createCANSocket(CAN_INTERFACE);
     
@@ -32,11 +38,10 @@ int mainFlow () {
         return 1;
     }
 
-    // // Create a pipe
-    // if (pipe(pipefd) == -1) {
-    //     perror("Error creating pipe");
-    //     exit(EXIT_FAILURE);
-    // }
+    if (signal(SIGINT, sigintHandler) == SIG_ERR) {
+        perror("Error setting up signal handler");
+        return 1;
+    }
 
     pthread_t canThread, uiThread, BMSThread, logInverterThread, serverThread, carControlThread;
 
@@ -45,10 +50,10 @@ int mainFlow () {
     //     return 1;
     // }
 
-    // if(pthread_create(&canThread, NULL, readInverterDataWithTimestamp, NULL)){
-    //     perror("ERROR: can thread create");
-    //     return 1;
-    // }
+    if(pthread_create(&canThread, NULL, readInverterData, NULL)){
+        perror("ERROR: can thread create");
+        return 1;
+    }
 
     // if(pthread_create(&BMSThread, NULL, serialSendReceive, NULL)){
     //     perror("ERROR: BMS thread create");
@@ -60,7 +65,7 @@ int mainFlow () {
     //     return 1;
     // }
 
-    if(pthread_create(&uiThread, NULL, windowLoopTimestamp, NULL)){
+    if(pthread_create(&uiThread, NULL, curses2, NULL)){
         perror("ERROR: ui thread create");
         return 1;
     }
@@ -70,16 +75,20 @@ int mainFlow () {
     //     return 1;
     // }
 
-    // if(pthread_create(&logInverterThread, NULL, logInverter, NULL)){
-    //     perror("ERROR: inverter log create");
-    //     return 1;
-    // }
+    if(pthread_create(&logInverterThread, NULL, logInverter, NULL)){
+        perror("ERROR: inverter log create");
+        return 1;
+    }
 
-    while(!uiIsFinished){
+    while(!uiIsFinished && !ctrlCPressed){
 
     }
 
     if (pthread_join(uiThread, NULL) != 0) {
+        perror("pthread_join");
+        return 1;
+    }
+    if (pthread_join(logInverterThread, NULL) != 0) {
         perror("pthread_join");
         return 1;
     }
@@ -93,26 +102,23 @@ int mainFlow () {
 }
 
 int main(int argc, char *argv[]) {
-    // createETHSocket();
-    // printf("starting...");
-    // serialSendReceive(NULL);
 
     mainFlow();
     
-    sock = createCANSocket(CAN_INTERFACE);
+    // sock = createCANSocket(CAN_INTERFACE);
     
-    if (sock == -1) {
-        printf("Failed to create the CAN socket.\n");
-        return 1;
-    }    
+    // if (sock == -1) {
+    //     printf("Failed to create the CAN socket.\n");
+    //     return 1;
+    // }    
 
-    pthread_t smoeThread;
-    if(pthread_create(&smoeThread, NULL, readDS4, (int *) sock)){
-        perror("ERROR: controller thread create");
-        return 1;
-    } else {
-        printf("controller thread created\n");
-    }
-    pthread_join(smoeThread, NULL);
+    // pthread_t smoeThread;
+    // if(pthread_create(&smoeThread, NULL, readDS4, (int *) sock)){
+    //     perror("ERROR: controller thread create");
+    //     return 1;
+    // } else {
+    //     printf("controller thread created\n");
+    // }
+    // pthread_join(smoeThread, NULL);
     return 0;
 }

@@ -1,4 +1,6 @@
 #include "funcs.h"
+#include <libevdev/libevdev.h>
+#include <libevdev/libevdev-uinput.h>
 #include "shares.h"
 
 // no raspberry é event2 e na orange é event8

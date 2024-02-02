@@ -14,6 +14,7 @@
 #include <linux/can.h>
 #include <linux/can/raw.h>
 #include <sys/ioctl.h>
+#include <signal.h>
 
 #include <termios.h>
 
@@ -26,8 +27,6 @@
 #include <netinet/in.h>
 #include <net/if.h>
 #include <arpa/inet.h>
-#include <libevdev/libevdev.h>
-#include <libevdev/libevdev-uinput.h>
 
 
 #define CAN_RECV_TIMEOUT_USECONDS 200000
@@ -94,5 +93,6 @@ void * server (void* arg);
 void * readDS4(void *arg );
 int sendInverterDataOnce(struct can_frame thisFrame);
 void* readInverterDataWithTimestamp(void* arg);
+void curses2 (void*arg);
 
 #endif

@@ -2,6 +2,7 @@
 #include "shares.h"
 
 struct allData all_data_temp;
+extern volatile sig_atomic_t ctrlCPressed;
 
 char *choices[] = {
     "Go Remote",
@@ -11,7 +12,18 @@ char *choices[] = {
     "Exit",
     (char *)NULL,
 };
-
+const char *menuItems[] = {
+    "Dummy option",
+    "Go Remote",
+    "Item 3",
+    "Item 4",
+    "Item 5"
+};
+enum {
+    LEFT_TEXT_PAIR = 1,
+    RIGHT_TEXT_PAIR,
+    MENU_PAIR
+};  
 void *windowLoop(void* arg) {
     initscr();
     raw();
@@ -83,7 +95,7 @@ void *windowLoop(void* arg) {
     char ok;
     char str[100];
     
-    while (1) {
+    while (!ctrlCPressed) {
 
         lastReceivedTime = (double) ((double)lastTelegram.tv_sec + (double)lastTelegram.tv_nsec / 10e6);
         if (lastReceivedTime > lastLastReceivedTime) {
@@ -194,10 +206,10 @@ void *windowLoop(void* arg) {
 
 void *windowLoopTimestamp(void* arg) {
     initscr();
-    raw();
-    keypad(stdscr, TRUE);
+    // raw();
     noecho();
     cbreak();
+    keypad(stdscr, TRUE);
     curs_set(0);
     start_color();
     init_pair(1, COLOR_BLACK, COLOR_WHITE);
@@ -264,29 +276,19 @@ void *windowLoopTimestamp(void* arg) {
     char str[100];
     
     while (1) {
+        
+        while((c = getch())) {   
+            switch(c) {
+            	case KEY_DOWN:
+                    menu_driver(my_menu, REQ_DOWN_ITEM);
+                    break;
+                case KEY_UP:
+                    menu_driver(my_menu, REQ_UP_ITEM);
+                    break;
+            }
+        }	
 
-        // lastReceivedTime = (double) ((double)lastTelegram.tv_sec + (double)lastTelegram.tv_nsec / 10e6);
-        // if (lastReceivedTime > lastLastReceivedTime) {
-        //     lat = lastReceivedTime - lastLastReceivedTime;
-        //     lastLastReceivedTime = lastReceivedTime;
-        // }
 
-        // clock_gettime(CLOCK_MONOTONIC, &start);
-        // sprintf(str, "Latency (lat): %e", lat);
-        // mvwprintw(win, row - 4, 1, str);
-
-        // sprintf(str, "Max. Latency: %e", maxTime);
-        // mvwprintw(win, row - 4, 41, str);
-        c = getch();                                                                                                                             
-        switch (c) {
-            case KEY_DOWN:
-                menu_driver(my_menu, REQ_DOWN_ITEM);
-                break;
-            case KEY_UP:
-                wbkgd(win, COLOR_PAIR(1));
-                menu_driver(my_menu, REQ_UP_ITEM);
-                break;
-        }
         pthread_mutex_lock(&inverterDataMutex);
         all_data_temp = all_data;
         all_data_temp.inverterBatteryVoltage = all_data_with_timestamp[2].data[1];
@@ -370,5 +372,148 @@ void *windowLoopTimestamp(void* arg) {
     endwin();
 
     uiIsFinished = 1;
+    return 0;
+}
+
+#define WIDTH 50
+
+void curses2(void *arg) {
+    initscr(); // Initialize curses
+
+    start_color();
+    init_pair(LEFT_TEXT_PAIR, COLOR_WHITE, COLOR_BLUE);
+    init_pair(RIGHT_TEXT_PAIR, COLOR_WHITE, COLOR_GREEN);
+    init_pair(MENU_PAIR, COLOR_WHITE, COLOR_MAGENTA);
+
+    noecho(); // Do not display input characters
+    keypad(stdscr, TRUE); // Enable special key input
+    
+    int height, width;
+    getmaxyx(stdscr, height, width); // Get the screen size
+
+    WINDOW *leftTextWin = newwin(height, WIDTH, 0, 0); // Create left text window
+    wbkgd(leftTextWin, COLOR_PAIR(LEFT_TEXT_PAIR)); // Set background color
+    WINDOW *rightTextWin = newwin(height, WIDTH, 0, WIDTH + 1); // Create right text window
+    wbkgd(rightTextWin, COLOR_PAIR(RIGHT_TEXT_PAIR)); // Set background color
+    WINDOW *menuWin = newwin(height, WIDTH, 0, 2 * (WIDTH + 1)); // Create menu window
+    wbkgd(menuWin, COLOR_PAIR(MENU_PAIR)); // Set background color
+
+
+    int leftTextVariable = 0; // Example variable for left text window
+    int rightTextVariable = 0; // Example variable for right text window
+    int menuVariable = 0; // Example variable for menu window
+
+    int menuIndex = 0; // Index of the selected menu item
+
+    int ch;
+    int currentWindow =2; // 0 for left text, 1 for right text, 2 for menu
+
+    halfdelay(1); // Set a maximum time for waiting for a keypress (1/10th of a second)
+
+    while ((ch = getch()) != 'q') {
+        // Check for user input
+        if (ch != ERR) {
+            // User pressed a key
+            switch (ch) {
+                case KEY_LEFT:
+                    currentWindow = (currentWindow + 2) % 3; // Move left through windows
+                    break;
+                case KEY_RIGHT:
+                    currentWindow = (currentWindow + 1) % 3; // Move right through windows
+                    break;
+                case KEY_UP:
+                    if (currentWindow == 2) {
+                        menuIndex = (menuIndex - 1 + sizeof(menuItems) / sizeof(menuItems[0])) % (sizeof(menuItems) / sizeof(menuItems[0]));
+                    }
+                    break;
+                case KEY_DOWN:
+                    if (currentWindow == 2) {
+                        menuIndex = (menuIndex + 1) % (sizeof(menuItems) / sizeof(menuItems[0]));
+                    }
+                    break;
+                case ' ':
+                    // Switch to the next window
+                    currentWindow = (currentWindow + 1) % 3;
+                    break;
+                case 10: // Enter key code
+                    if (currentWindow == 2) {
+                        // Handle selection of the menu item (for example, print it)
+                        mvprintw(height - 2, 0, "Selected: %s", menuItems[menuIndex]);
+                        if(menuIndex == 1) {
+                            
+                        }
+                        refresh();
+                        getch(); // Wait for user input
+                    }
+                    break;
+            }
+        } else {
+            // No user input, update variables or other non-input logic here
+            // leftTextVariable++;
+            // rightTextVariable--;
+            menuVariable += 2;
+        }
+
+        char str[100] = {0};
+
+        // Update content in each window based on variables
+        mvwprintw(leftTextWin, 1, 1, "Inverter Data");
+        pthread_mutex_lock(&inverterDataMutex);
+        all_data_temp = all_data;
+        pthread_mutex_unlock(&inverterDataMutex);
+
+        sprintf(str, " Battery Voltage (inverter): %0.1fV", (float) all_data_temp.inverterBatteryVoltage/10);
+        mvwprintw(leftTextWin, 3, 1, str);
+        sprintf(str, " Motor Current:              %0.1fA", (float) all_data_temp.motorCurrent/10);
+        mvwprintw(leftTextWin, 4, 1, str);
+        sprintf(str, " Motor Voltage:              %0.1fV", (float) all_data_temp.motorVoltage/10);
+        mvwprintw(leftTextWin, 5, 1, str);
+        sprintf(str, " Mosfet 1 Temperature:       %0.1fC", (float) all_data_temp.inverterMosfetTemperature1/10);
+        mvwprintw(leftTextWin, 6, 1, str);
+        sprintf(str, " Mosfet 2 Temperature:       %0.1fC", (float) all_data_temp.inverterMosfetTemperature2/10);
+        mvwprintw(leftTextWin, 7, 1, str);
+        sprintf(str, " Internal Air Temperature    %0.1fC", (float) all_data_temp.inverterAirTemperature/10);
+        mvwprintw(leftTextWin, 8, 1, str);
+
+        mvwprintw(rightTextWin, 1, 1, "BMS data");
+
+
+        // Update and highlight the menu window
+        mvwprintw(menuWin, 1, 1, "Menu:");
+        for (int i = 0; i < sizeof(menuItems) / sizeof(menuItems[0]); ++i) {
+            if (i == menuIndex) {
+                wattron(menuWin, A_REVERSE);
+            }
+            mvwprintw(menuWin, i + 3, 2, "%s", menuItems[i]);
+            wattroff(menuWin, A_REVERSE);
+        }
+
+        // Highlight the active window
+        wattron(leftTextWin, A_NORMAL);
+        wattron(rightTextWin, A_NORMAL);
+        wattron(menuWin, A_NORMAL);
+
+        switch (currentWindow) {
+            case 0:
+                wattron(leftTextWin, A_REVERSE);
+                break;
+            case 1:
+                wattron(rightTextWin, A_REVERSE);
+                break;
+            case 2:
+                wattron(menuWin, A_REVERSE);
+                break;
+        }
+
+        // Refresh each window
+        wrefresh(leftTextWin);
+        wrefresh(rightTextWin);
+        wrefresh(menuWin);
+    }
+
+    // End curses
+    endwin();
+    uiIsFinished = 1;
+
     return 0;
 }

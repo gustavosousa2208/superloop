@@ -9,6 +9,8 @@
     #define CAN_INTERFACE "can0"
 #endif
 
+#define LOG 1
+
 #define SERVER_PORT 12345
 
 #define CONFIG_H_VERSION 1

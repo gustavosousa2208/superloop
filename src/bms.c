@@ -10,7 +10,7 @@ void *serialSendReceive (void* arg) {
     }
     struct termios tty;
     memset(&tty, 0, sizeof(tty));
-    if (tcgetattr(serial_port, &tty) != 0) {
+    if ((serial_port, &tty) != 0) {
         perror("Error from tcgetattr");
         return 1;
     }
@@ -54,10 +54,10 @@ void *serialSendReceive (void* arg) {
             return 1;
         } else {
             pthread_mutex_lock(&BMSDataMutex);
-            all_data.sharedBMSVoltage = (buffer[4] << 8) | (buffer[5]);
-            all_data.sharedBMSCurrent = (buffer[6] << 8) | (buffer[7]);
-            all_data.sharedBMSRemainingCapacity = (buffer[8] << 8) | (buffer[9]);
-            all_data.sharedBMSTotalCapacity = (buffer[10] << 8) | (buffer[11]);
+            bms_data.sharedBMSVoltage = (buffer[4] << 8) | (buffer[5]);
+            bms_data.sharedBMSCurrent = (buffer[6] << 8) | (buffer[7]);
+            bms_data.sharedBMSRemainingCapacity = (buffer[8] << 8) | (buffer[9]);
+            bms_data.sharedBMSTotalCapacity = (buffer[10] << 8) | (buffer[11]);
             pthread_mutex_unlock(&BMSDataMutex);
         }
         write(serial_port, dummy, 1);

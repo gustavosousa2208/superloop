@@ -6,7 +6,7 @@
 #ifdef DEBUG
     #define CAN_INTERFACE "vcan0"
 #else
-    #define CAN_INTERFACE "can0"
+    #define CAN_INTERFACE "vcan0"
 #endif
 
 #define LOG 1

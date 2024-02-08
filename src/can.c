@@ -54,8 +54,10 @@ int sendInverterDataOnce(struct can_frame thisFrame){
 
 void *readInverterData(void * arg) {
     struct can_frame thisFrame;
+    struct timespec before, now;
 
     while (1) {
+        // clock_gettime(CLOCK_MONOTONIC, &before);
         pthread_mutex_lock(&canInterfaceMutex);
         ssize_t nbytes = read(sock, &thisFrame, sizeof(struct can_frame));
         pthread_mutex_unlock(&canInterfaceMutex);
@@ -64,7 +66,6 @@ void *readInverterData(void * arg) {
             perror("read");
             break;
         }
-
         pthread_mutex_lock(&inverterDataMutex);
         switch(thisFrame.can_id){
             case 0x701:

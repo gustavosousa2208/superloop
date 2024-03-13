@@ -11,6 +11,10 @@
         "shares.h": "c",
         "ncurses.h": "c",
         "funcs.h": "c",
-        "socket.h": "c"
+        "socket.h": "c",
+        "config.h": "c",
+        "array": "c",
+        "string_view": "c",
+        "stdlib.h": "c"
     }
 }

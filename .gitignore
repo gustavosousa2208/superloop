@@ -1,6 +1,4 @@
-bin/
-obj/
-inverter_messages/bin/
-inverter_messages/obj/
-log.txt
-
+./bin/
+./obj/
+./inverter_messages/bin/*
+./inverter_messages/obj/*

@@ -6,11 +6,9 @@ const char *serial_interface = "/dev/tnt0"; // ttyUSB0 esse ai e virtual
 int sharedCounter = 0;
 volatile int uiIsFinished = 0;
 int sock;
-bool noCanMessageReceived = false;
 
 int pipefd[2];  // File descriptors for the pipe
 
-struct onlyBMSData bms_data;
 struct allData all_data;
 struct inverterDataChunk all_data_with_timestamp[3];
 

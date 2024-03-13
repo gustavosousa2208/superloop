@@ -4,16 +4,12 @@
 extern const char *can_interface;
 
 extern int sock;
-extern bool noCanMessageReceived;
-
 
 extern pthread_mutex_t canInterfaceMutex;
 extern pthread_mutex_t inverterDataMutex;
 
 extern struct allData all_data;
 extern struct inverterDataChunk all_data_with_timestamp[3];
-extern struct onlyBMSData bms_data;
-
 
 extern int sharedCounter;
 

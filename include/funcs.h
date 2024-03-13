@@ -75,14 +75,6 @@ struct allData {
     uint16_t sharedBMSTotalCapacity;
 };
 
-struct onlyBMSData {
-    uint16_t sharedBMSVoltage;
-    uint16_t sharedBMSCurrent;
-    uint16_t sharedBMSTemperature;
-    uint16_t sharedBMSRemainingCapacity;
-    uint16_t sharedBMSTotalCapacity;
-};
-
 struct inverterDataChunk {
     uint16_t data[4];
     struct timespec timestamp;

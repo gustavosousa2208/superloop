@@ -2,7 +2,6 @@
 #include "shares.h"
 
 struct allData all_data_temp;
-struct onlyBMSData bms_data_temp;
 extern volatile sig_atomic_t ctrlCPressed;
 
 char *choices[] = {
@@ -14,11 +13,11 @@ char *choices[] = {
     (char *)NULL,
 };
 const char *menuItems[] = {
-    "Modo Remoto",
-    "Modo Local",
-    "Setar velocidade",
-    "Parar Total",
-    "JOG ON/OFF"
+    "Dummy option",
+    "Go Remote",
+    "Item 3",
+    "Item 4",
+    "Item 5"
 };
 enum {
     LEFT_TEXT_PAIR = 1,
@@ -123,11 +122,6 @@ void *windowLoop(void* arg) {
         pthread_mutex_lock(&inverterDataMutex);
         all_data_temp = all_data;
         pthread_mutex_unlock(&inverterDataMutex);
-    
-        pthread_mutex_lock(&BMSDataMutex);
-        bms_data_temp = bms_data;
-        pthread_mutex_unlock(&BMSDataMutex);
-
 
         sprintf(str, " Battery Voltage (inverter): %0.1fV", (float) all_data_temp.inverterBatteryVoltage/10);
         mvwprintw(win, 3, 1, str);
@@ -142,29 +136,29 @@ void *windowLoop(void* arg) {
         sprintf(str, " Internal Air Temperature    %0.1fC", (float) all_data_temp.inverterAirTemperature/10);
         mvwprintw(win, 8, 1, str);
 
-        
+        pthread_mutex_lock(&serialInterfaceMutex);
         sprintf(str, " Battery Voltage (BMS):      %0.1fV", (float) all_data_temp.sharedBMSVoltage/100);
         pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 3, 41, str);
 
-        
+        pthread_mutex_lock(&serialInterfaceMutex);
         sprintf(str, " Battery Current:            %0.1fA", (float) all_data_temp.sharedBMSCurrent/100);
         pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 4, 41, str);
         
-        
+        pthread_mutex_lock(&serialInterfaceMutex);
         sprintf(str, " Battery Temperature:        %0.1fC", (float)all_data_temp.sharedBMSTemperature/100);
         pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 5, 41, str);
         
-        
+        pthread_mutex_lock(&serialInterfaceMutex);
         sprintf(str, " Remaining Capacity:         %0dAh", all_data_temp.sharedBMSRemainingCapacity);
         pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 6, 41, str);
         
-        
+        pthread_mutex_lock(&serialInterfaceMutex);
         sprintf(str, " Total Capacity:             %dAh", all_data_temp.sharedBMSTotalCapacity);
-
+        pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 7, 41, str);
 
         ok = (all_data_temp.logicalState & 256) > 0 ? '*' : ' ';
@@ -312,15 +306,30 @@ void *windowLoopTimestamp(void* arg) {
         mvwprintw(win, 7, 1, str);
         sprintf(str, " Internal Air Temperature    %0.1fC", (float) all_data_temp.inverterMosfetTemperature1/10);
         mvwprintw(win, 8, 1, str);
+
+        pthread_mutex_lock(&serialInterfaceMutex);
         sprintf(str, " Battery Voltage (BMS):      %0.1fV", (float) all_data_temp.sharedBMSVoltage/100);
+        pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 3, 41, str);
+
+        pthread_mutex_lock(&serialInterfaceMutex);
         sprintf(str, " Battery Current:            %0.1fA", (float) all_data_temp.sharedBMSCurrent/100);
+        pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 4, 41, str);
+        
+        pthread_mutex_lock(&serialInterfaceMutex);
         sprintf(str, " Battery Temperature:        %0.1fC", (float)all_data_temp.sharedBMSTemperature/100);
+        pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 5, 41, str);
+        
+        pthread_mutex_lock(&serialInterfaceMutex);
         sprintf(str, " Remaining Capacity:         %0dAh", all_data_temp.sharedBMSRemainingCapacity);
+        pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 6, 41, str);
+        
+        pthread_mutex_lock(&serialInterfaceMutex);
         sprintf(str, " Total Capacity:             %dAh", all_data_temp.sharedBMSTotalCapacity);
+        pthread_mutex_unlock(&serialInterfaceMutex);
         mvwprintw(win, 7, 41, str);
 
         ok = (all_data_temp.logicalState & 256) > 0 ? '*' : ' ';
@@ -366,18 +375,15 @@ void *windowLoopTimestamp(void* arg) {
     return 0;
 }
 
-#define WIDTH 40
+#define WIDTH 50
 
 void curses2(void *arg) {
     initscr(); // Initialize curses
 
     start_color();
-    // init_pair(LEFT_TEXT_PAIR, COLOR_WHITE, COLOR_BLUE);
-    // init_pair(RIGHT_TEXT_PAIR, COLOR_WHITE, COLOR_GREEN);
-    // init_pair(MENU_PAIR, COLOR_WHITE, COLOR_MAGENTA);
-    init_pair(LEFT_TEXT_PAIR, COLOR_BLACK, COLOR_WHITE);
-    init_pair(RIGHT_TEXT_PAIR, COLOR_BLACK, COLOR_WHITE);
-    init_pair(MENU_PAIR, COLOR_BLACK, COLOR_WHITE);
+    init_pair(LEFT_TEXT_PAIR, COLOR_WHITE, COLOR_BLUE);
+    init_pair(RIGHT_TEXT_PAIR, COLOR_WHITE, COLOR_GREEN);
+    init_pair(MENU_PAIR, COLOR_WHITE, COLOR_MAGENTA);
 
     noecho(); // Do not display input characters
     keypad(stdscr, TRUE); // Enable special key input
@@ -400,10 +406,7 @@ void curses2(void *arg) {
     int menuIndex = 0; // Index of the selected menu item
 
     int ch;
-    int currentWindow = 2; 
-    char ok;
-    char str[100] = {0};
-
+    int currentWindow =2; // 0 for left text, 1 for right text, 2 for menu
 
     halfdelay(1); // Set a maximum time for waiting for a keypress (1/10th of a second)
 
@@ -451,83 +454,31 @@ void curses2(void *arg) {
             menuVariable += 2;
         }
 
-        //create horizontal line in the first row
-        // for (int i = 0; i < width; i++) {
-        //     mvwaddch(leftTextWin, 0, i, ACS_HLINE);
-        //     mvwaddch(rightTextWin, 0, i, ACS_HLINE);
-        //     mvwaddch(menuWin, 0, i, ACS_HLINE);
-        // }
-        mvwhline(leftTextWin, 0, 0, ACS_HLINE, width - 2);
-        mvwhline(leftTextWin, 9, 0, ACS_HLINE, width - 2);
-        mvwhline(leftTextWin, 16, 0, ACS_HLINE, width - 2);
-        mvwhline(leftTextWin, 18, 0, ACS_HLINE, width - 2);
-        mvwhline(rightTextWin, 0, 0, ACS_HLINE, width - 2);
-        mvwhline(rightTextWin, 9, 0, ACS_HLINE, width - 2);
-        mvwhline(rightTextWin, 16, 0, ACS_HLINE, width - 2);
-        mvwhline(rightTextWin, 18, 0, ACS_HLINE, width - 2);
-        mvwhline(menuWin, 0, 0, ACS_HLINE, width - 2);
-        mvwhline(menuWin, 9, 0, ACS_HLINE, width - 2);
-        mvwhline(menuWin, 16, 0, ACS_HLINE, width - 2);
-        mvwhline(menuWin, 18, 0, ACS_HLINE, width - 2);
+        char str[100] = {0};
 
+        // Update content in each window based on variables
+        mvwprintw(leftTextWin, 1, 1, "Inverter Data");
         pthread_mutex_lock(&inverterDataMutex);
         all_data_temp = all_data;
         pthread_mutex_unlock(&inverterDataMutex);
 
-        mvwprintw(leftTextWin, 1, 1, "Dados do Inversor");
-        sprintf(str, "* Tensao da Bateria:           %0.1fV", (float) all_data_temp.inverterBatteryVoltage/10);
+        sprintf(str, " Battery Voltage (inverter): %0.1fV", (float) all_data_temp.inverterBatteryVoltage/10);
         mvwprintw(leftTextWin, 3, 1, str);
-        sprintf(str, "* Corrente do Motor:           %0.1fA", (float) all_data_temp.motorCurrent/10);
+        sprintf(str, " Motor Current:              %0.1fA", (float) all_data_temp.motorCurrent/10);
         mvwprintw(leftTextWin, 4, 1, str);
-        sprintf(str, "* Tensao do Motor:             %0.1fV", (float) all_data_temp.motorVoltage/10);
+        sprintf(str, " Motor Voltage:              %0.1fV", (float) all_data_temp.motorVoltage/10);
         mvwprintw(leftTextWin, 5, 1, str);
-        sprintf(str, "* Temperatura do Mosfet 1:     %0.1fC", (float) all_data_temp.inverterMosfetTemperature1/10);
+        sprintf(str, " Mosfet 1 Temperature:       %0.1fC", (float) all_data_temp.inverterMosfetTemperature1/10);
         mvwprintw(leftTextWin, 6, 1, str);
-        sprintf(str, "* Temperatura do Mosfet 2:     %0.1fC", (float) all_data_temp.inverterMosfetTemperature2/10);
+        sprintf(str, " Mosfet 2 Temperature:       %0.1fC", (float) all_data_temp.inverterMosfetTemperature2/10);
         mvwprintw(leftTextWin, 7, 1, str);
-        sprintf(str, "* Temperatura Interna do Ar:   %0.1fC", (float) all_data_temp.inverterAirTemperature/10);
+        sprintf(str, " Internal Air Temperature    %0.1fC", (float) all_data_temp.inverterAirTemperature/10);
         mvwprintw(leftTextWin, 8, 1, str);
 
-        pthread_mutex_lock(&BMSDataMutex);
-        bms_data_temp = bms_data;
-        pthread_mutex_unlock(&BMSDataMutex);
+        mvwprintw(rightTextWin, 1, 1, "BMS data");
 
-        mvwprintw(rightTextWin, 1, 1, "Dados do BMS");
-        sprintf(str, "* Battery Voltage (BMS):      %0.1fV", (float) bms_data_temp.sharedBMSVoltage/100);
-        mvwprintw(rightTextWin, 3, 1, str);
-        sprintf(str, "* Battery Current:            %0.1fA", (float) bms_data_temp.sharedBMSCurrent/100);
-        mvwprintw(rightTextWin, 4, 1, str);
-        sprintf(str, "* Battery Temperature:        %0.1fC", (float)bms_data_temp.sharedBMSTemperature/100);
-        mvwprintw(rightTextWin, 5, 1, str);
-        sprintf(str, "* Remaining Capacity:         %0dAh", bms_data_temp.sharedBMSRemainingCapacity);
-        mvwprintw(rightTextWin, 6, 1, str);
-        sprintf(str, "* Total Capacity:             %dAh", bms_data_temp.sharedBMSTotalCapacity);
-        mvwprintw(rightTextWin, 7, 1, str);
 
-        ok = (all_data_temp.logicalState & 256) > 0 ? '*' : ' ';
-        sprintf(str, "[%c] Girando: ", ok);
-        mvwprintw(leftTextWin, 10, 2, str);
-        ok = (all_data_temp.logicalState & 512) > 0 ? '*' : ' ';
-        sprintf(str, "[%c] Habilitado: ", ok);
-        mvwprintw(leftTextWin, 11, 2, str);
-        ok = (all_data_temp.logicalState & 1024) > 0 ? '*' : ' ';
-        sprintf(str, "[%c] Sent. Horario: ", ok);
-        mvwprintw(leftTextWin, 12, 2, str);
-        ok = (all_data_temp.logicalState & 2048) > 0 ? '*' : ' ';
-        sprintf(str, "[%c] JOG: ", ok);
-        mvwprintw(leftTextWin, 13, 2, str);
-        ok = (all_data_temp.logicalState & 4096) > 0 ? '*' : ' ';
-        sprintf(str, "[%c] Remoto: ", ok);
-        mvwprintw(leftTextWin, 14, 2, str);
-        ok = (all_data_temp.logicalState & 8192) > 0 ? '*' : ' ';
-        sprintf(str, "[%c] SUB: ", ok);
-        mvwprintw(leftTextWin, 15, 2, str);
-        ok = (all_data_temp.logicalState & 32768) > 0 ? '*' : ' ';
-        sprintf(str, "[%c] FALTA: ", ok);
-
-        mvwprintw(leftTextWin, 17, 2, "Latencia: %d ms", 80);
-        mvwprintw(rightTextWin, 17, 2, "Ultimo telegrama: %d ms", 23);
-
+        // Update and highlight the menu window
         mvwprintw(menuWin, 1, 1, "Menu:");
         for (int i = 0; i < sizeof(menuItems) / sizeof(menuItems[0]); ++i) {
             if (i == menuIndex) {
@@ -538,21 +489,21 @@ void curses2(void *arg) {
         }
 
         // Highlight the active window
-        // wattron(leftTextWin, A_NORMAL);
-        // wattron(rightTextWin, A_NORMAL);
-        // wattron(menuWin, A_NORMAL);
+        wattron(leftTextWin, A_NORMAL);
+        wattron(rightTextWin, A_NORMAL);
+        wattron(menuWin, A_NORMAL);
 
-        // switch (currentWindow) {
-        //     case 0:
-        //         wattron(leftTextWin, A_REVERSE);
-        //         break;
-        //     case 1:
-        //         wattron(rightTextWin, A_REVERSE);
-        //         break;
-        //     case 2:
-        //         wattron(menuWin, A_REVERSE);
-        //         break;
-        // }
+        switch (currentWindow) {
+            case 0:
+                wattron(leftTextWin, A_REVERSE);
+                break;
+            case 1:
+                wattron(rightTextWin, A_REVERSE);
+                break;
+            case 2:
+                wattron(menuWin, A_REVERSE);
+                break;
+        }
 
         // Refresh each window
         wrefresh(leftTextWin);
